@@ -14,6 +14,8 @@ npm start
 - Public page: http://localhost:3000
 - Organizer dashboard: http://localhost:3000/#admin
 
+The app creates `data/app.db` and `data/uploads/` on startup. Runtime data is excluded from Git; keep database and upload backups separately.
+
 Without Razorpay keys, payments run in **demo mode** (no charge). Without SMTP settings, emails print to the console. You can test the full flow locally.
 
 ## How it works
