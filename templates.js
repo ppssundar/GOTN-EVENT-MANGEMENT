@@ -8,25 +8,23 @@ const cadence = [['reminder7d', 7 * 1440], ['reminder1d', 1440], ['reminder1h', 
 const sign = '\n\nThe GOTN Team';
 const emails = {
   received: {
-    subject: 'Payment received â€“ your seat is under review',
+    subject: 'Payment received – your seat is under review',
     body: `Hi {{name}},\n\nWe've received your payment of {{price}} for {{event}} (payment {{paymentId}}).\n\nSeats are curated, so our team will review your registration and email you a decision shortly. If we can't offer you a seat, your payment is refunded automatically.${sign}`
   },
   accepted: {
-    subject: "You're in! {{event}} â€“ {{date}}",
-  body: `Hi {{name}},\n\nGood news: your registration is accepted.\n\nWhen: {{date}}, {{time}}\nWhere: {{venue}}\nMap: <a href=\"{{map}}\">View Map</a> \n\nAdd to calendar (Google): {{cal}}\nAdd to calendar (.ics, with reminders): {{ics}}\n\nSpeakers:\n{{speakers}}${sign}`
-  
-    //body: `Hi {{name}},\n\nGood news: your registration is accepted.\n\nWhen: {{date}}, {{time}}\nWhere: {{venue}}\nMap: {{map}}\n\nAdd to calendar (Google): {{cal}}\nAdd to calendar (.ics, with reminders): {{ics}}\n\nSpeakers:\n{{speakers}}${sign}`
+    subject: "You're in! {{event}} – {{date}}",
+    body: `Hi {{name}},\n\nGood news: your registration is accepted.\n\nWhen: {{date}}, {{time}}\nWhere: {{venue}}\nMap: {{map}}\n\nAdd to calendar (Google): {{cal}}\nAdd to calendar (.ics, with reminders): {{ics}}\n\nSpeakers:\n{{speakers}}${sign}`
   },
   reminder7d: {
-    subject: 'One week to go â€“ {{event}}',
+    subject: 'One week to go – {{event}}',
     body: `Hi {{name}},\n\nOnly a week left! Line-up:\n{{speakers}}\n\nVenue: {{venue}}\nDirections: {{map}}${sign}`
   },
   reminder1d: {
-    subject: 'Tomorrow: {{event}} â€“ logistics inside',
+    subject: 'Tomorrow: {{event}} – logistics inside',
     body: `Hi {{name}},\n\nTomorrow's the day. Starts {{time}}.\n\nVenue: {{venue}}\nDirections: {{map}}\nBring a photo ID.${sign}`
   },
   reminder1h: {
-    subject: 'Starting in an hour â€“ {{event}}',
+    subject: 'Starting in an hour – {{event}}',
     body: `Hi {{name}},\n\nWe start in one hour at {{venue}}.\nDirections: {{map}}${sign}`
   },
   thanks: {
@@ -34,7 +32,7 @@ const emails = {
     body: `Hi {{name}},\n\nThank you for being part of {{event}}. Slides and recordings will follow soon.${sign}`
   },
   declined: {
-    subject: 'Your declined receipt â€“ {{event}} (#{{receipt}})',
+    subject: 'Your declined receipt – {{event}} (#{{receipt}})',
     body: `DECLINED RECEIPT #{{receipt}}\n------------------------------\nItem:      1 x seat at {{event}}\nStatus:    Politely, firmly, regretfully NOT ACCEPTED\nRefund:    {{price}}. {{refundNote}}\nDrama:     0 (we checked)\n------------------------------\n\nHi {{name}},\n\n{{joke}}\n\nThank you for your interest. We hope to see you at the next one.${sign}`
   }
 };
