@@ -17,7 +17,7 @@ const emails = {
   },
   reminder7d: {
     subject: 'One week to go – {{event}}',
-    body: `Hi {{name}},\n\nOnly a week left! Line-up:\n{{speakers}}\n\nVenue: {{venue}}\nDirections: {{map}}${sign}`
+    body: `<p>Hi {{name}},</p><p>Only a week left! Line-up:</p><div>{{speakers}}</div><p><strong>Venue:</strong> {{venue}}<br><strong>Directions:</strong> <a href="{{map}}">View Map</a></p>${sign}`
   },
   reminder1d: {
     subject: 'Tomorrow: {{event}} – logistics inside',
