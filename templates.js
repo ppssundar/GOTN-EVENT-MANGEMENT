@@ -9,31 +9,31 @@ const sign = '\n\nThe GOTN Team';
 const emails = {
   received: {
     subject: 'Payment received – your seat is under review',
-    body: `<p>Hi {{name}},</p><p>We've received your payment of {{price}} for {{event}} (payment {{paymentId}}).</p><p>Seats are curated, so our team will review your registration and email you a decision shortly. If we can't offer you a seat, your payment is refunded automatically.</p>${sign}`
+    body: `Hi {{name}},\n\nWe've received your payment of {{price}} for {{event}} (payment {{paymentId}}).\n\nSeats are curated, so our team will review your registration and email you a decision shortly. If we can't offer you a seat, your payment is refunded automatically.${sign}`
   },
   accepted: {
     subject: "You're in! {{event}} – {{date}}",
-    body: `<p>Hi {{name}},</p><p>Good news: your registration is accepted.</p><p><strong>When:</strong> {{date}}, {{time}}<br><strong>Where:</strong>{{venue}}<br><strong>Map:</strong> <a href="{{map}}">View Map</a></p><p><strong>Add to calendar (Google):</strong> <a href="{{cal}}">Add to Google Calendar</a><br><strong>Add to calendar (.ics, with reminders):</strong> <a href="{{ics}}">Download .ics</a></p><p><strong>Speakers:</strong></p><div>{{speakers}}</div>${sign}`
+    body: `Hi {{name}},\n\nGood news: your registration is accepted.\n\nWhen: {{date}}, {{time}}\nWhere: {{venue}}\nMap: {{map}}\n\nAdd to calendar (Google): {{cal}}\nAdd to calendar (.ics, with reminders): {{ics}}\n\nSpeakers:\n{{speakers}}${sign}`
   },
   reminder7d: {
     subject: 'One week to go – {{event}}',
-    body: `<p>Hi {{name}},</p><p>Only a week left! Line-up:</p><div>{{speakers}}</div><p><strong>Venue:</strong> {{venue}}<br><strong>Directions:</strong> <a href="{{map}}">View Map</a></p>${sign}`
+    body: `Hi {{name}},\n\nOnly a week left! Line-up:\n{{speakers}}\n\nVenue: {{venue}}\nDirections: {{map}}${sign}`
   },
   reminder1d: {
     subject: 'Tomorrow: {{event}} – logistics inside',
-    body: `<p>Hi {{name}},</p><p>Tomorrow's the day. Starts {{time}}.</p><p><strong>Venue:</strong> {{venue}}<br><strong>Directions:</strong> <a href="{{map}}">View Map</a></p><p>Bring a photo ID.</p>${sign}`
+    body: `Hi {{name}},\n\nTomorrow's the day. Starts {{time}}.\n\nVenue: {{venue}}\nDirections: {{map}}\nBring a photo ID.${sign}`
   },
   reminder1h: {
     subject: 'Starting in an hour – {{event}}',
-    body: `<p>Hi {{name}},</p><p>We start in one hour at {{venue}}.</p><p><strong>Directions:</strong> <a href="{{map}}">View Map</a></p>${sign}`
+    body: `Hi {{name}},\n\nWe start in one hour at {{venue}}.\nDirections: {{map}}${sign}`
   },
   thanks: {
     subject: 'Thanks for joining {{event}}',
-    body: `<p>Hi {{name}},</p><p>Thank you for being part of {{event}}. Slides and recordings will follow soon.</p>${sign}`
+    body: `Hi {{name}},\n\nThank you for being part of {{event}}. Slides and recordings will follow soon.${sign}`
   },
   declined: {
     subject: 'Your declined receipt – {{event}} (#{{receipt}})',
-    `<p><strong>DECLINED RECEIPT #{{receipt}}</strong></p><table style="border-collapse: collapse; border-top: 1px dashed #999; border-bottom: 1px dashed #999; font-family: monospace; margin: 12px 0;"><tr><td style="padding: 6px 16px 2px 0;"><strong>Item:</strong></td><td style="padding: 6px 0 2px 0;">1 x seat at {{event}}</td></tr><tr><td style="padding: 2px 16px 2px 0;"><strong>Status:</strong></td><td style="padding: 2px 0;">Politely, firmly, regretfully NOT ACCEPTED</td></tr><tr><td style="padding: 2px 16px 2px 0;"><strong>Refund:</strong></td><td style="padding: 2px 0;">{{price}}. {{refundNote}}</td></tr><tr><td style="padding: 2px 16px 6px 0;"><strong>Drama:</strong></td><td style="padding: 2px 0 6px 0;">0 (we checked)</td></tr></table><p>Hi {{name}},</p><p>{{joke}}</p><p>Thank you for your interest. We hope to see you at the next one.</p>${sign}`
+    body: `DECLINED RECEIPT #{{receipt}}\n------------------------------\nItem:      1 x seat at {{event}}\nStatus:    Politely, firmly, regretfully NOT ACCEPTED\nRefund:    {{price}}. {{refundNote}}\nDrama:     0 (we checked)\n------------------------------\n\nHi {{name}},\n\n{{joke}}\n\nThank you for your interest. We hope to see you at the next one.${sign}`
   }
 };
 
