@@ -9,11 +9,11 @@ const sign = '\n\nThe GOTN Team';
 const emails = {
   received: {
     subject: 'Payment received – your seat is under review',
-    body: `Hi {{name}},\n\nWe've received your payment of {{price}} for {{event}} (payment {{paymentId}}).\n\nSeats are curated, so our team will review your registration and email you a decision shortly. If we can't offer you a seat, your payment is refunded automatically.${sign}`
+    body: `<p>Hi {{name}},</p><p>We've received your payment of {{price}} for {{event}} (payment {{paymentId}}).</p><p>Seats are curated, so our team will review your registration and email you a decision shortly. If we can't offer you a seat, your payment is refunded automatically.</p>${sign}`
   },
   accepted: {
     subject: "You're in! {{event}} – {{date}}",
-    body: `Hi {{name}},\n\nGood news: your registration is accepted.\n\nWhen: {{date}}, {{time}}\nWhere: {{venue}}\nMap: {{map}}\n\nAdd to calendar (Google): {{cal}}\nAdd to calendar (.ics, with reminders): {{ics}}\n\nSpeakers:\n{{speakers}}${sign}`
+    body: `<p>Hi {{name}},</p><p>Good news: your registration is accepted.</p><p><strong>When:</strong> {{date}}, {{time}}<br><strong>Where:</strong>{{venue}}<br><strong>Map:</strong> <a href="{{map}}">View Map</a></p><p><strong>Add to calendar (Google):</strong> <a href="{{cal}}">Add to Google Calendar</a><br><strong>Add to calendar (.ics, with reminders):</strong> <a href="{{ics}}">Download .ics</a></p><p><strong>Speakers:</strong></p><div>{{speakers}}</div>${sign}`
   },
   reminder7d: {
     subject: 'One week to go – {{event}}',
