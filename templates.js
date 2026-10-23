@@ -8,7 +8,7 @@ const cadence = [['reminder7d', 7 * 1440], ['reminder1d', 1440], ['reminder1h', 
 const sign = '\n\nThe GOTN Team';
 const emails = {
   received: {
-    subject: 'Payment received – your seat is under review',
+    subject: 'Payment received – your seat is under review.',
     body: `Hi {{name}},\n\nWe've received your payment of {{price}} for {{event}} (payment {{paymentId}}).\n\nSeats are curated, so our team will review your registration and email you a decision shortly. If we can't offer you a seat, your payment is refunded automatically.${sign}`
   },
   accepted: {
