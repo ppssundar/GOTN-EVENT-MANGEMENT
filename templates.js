@@ -21,11 +21,11 @@ const emails = {
   },
   reminder1d: {
     subject: 'Tomorrow: {{event}} – logistics inside',
-    body: `Hi {{name}},\n\nTomorrow's the day. Starts {{time}}.\n\nVenue: {{venue}}\nDirections: {{map}}\nBring a photo ID.${sign}`
+    body: `<p>Hi {{name}},</p><p>Tomorrow's the day. Starts {{time}}.</p><p><strong>Venue:</strong> {{venue}}<br><strong>Directions:</strong> <a href="{{map}}">View Map</a></p><p>Bring a photo ID.</p>${sign}`
   },
   reminder1h: {
     subject: 'Starting in an hour – {{event}}',
-    body: `Hi {{name}},\n\nWe start in one hour at {{venue}}.\nDirections: {{map}}${sign}`
+    body: `<p>Hi {{name}},</p><p>We start in one hour at {{venue}}.</p><p><strong>Directions:</strong> <a href="{{map}}">View Map</a></p>${sign}`
   },
   thanks: {
     subject: 'Thanks for joining {{event}}',
