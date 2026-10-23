@@ -52,7 +52,7 @@ async function flush() { // sends everything that is due; prints to console when
   const due = db.prepare('SELECT * FROM queue WHERE sent_at IS NULL AND send_at<=?').all(new Date().toISOString());
   for (const m of due) {
     try {
-      if (mailer) await mailer.sendMail({ from: E.MAIL_FROM || 'EventDesk <no-reply@example.com>', to: m.to_email, subject: m.subject, text: m.body });
+      if (mailer) await mailer.sendMail({ from: E.MAIL_FROM || 'EventDesk <no-reply@example.com>', to: m.to_email, subject: m.subject, html: m.body });
       else console.log(`\n[MAIL -> ${m.to_email}] ${m.subject}\n${m.body}\n`);
       db.prepare('UPDATE queue SET sent_at=? WHERE id=?').run(new Date().toISOString(), m.id);
     } catch (err) { console.error('mail failed', m.id, err.message); }

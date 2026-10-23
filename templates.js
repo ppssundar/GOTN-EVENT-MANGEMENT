@@ -13,7 +13,7 @@ const emails = {
   },
   accepted: {
     subject: "You're in! {{event}} – {{date}}",
-    body: `Hi {{name}},\n\nGood news: your registration is accepted.\n\nWhen: {{date}}, {{time}}\nWhere: {{venue}}\nMap: {{map}}\n\nAdd to calendar (Google): {{cal}}\nAdd to calendar (.ics, with reminders): {{ics}}\n\nSpeakers:\n{{speakers}}${sign}`
+    body: `<p>Hi {{name}},</p><p>Good news: your registration is accepted.</p><p><strong>When:</strong> {{date}}, {{time}}<br><strong>Where:</strong>{venue}}<br><strong>Map:</strong> <a href="{{map}}">View Map</a></p><p><strong>Add to calendar (Google):</strong> <a href="{{cal}}">Add to Google Calendar</a><br><strong>Add to calendar (.ics, with reminders):</strong> <a href="{{ics}}">Download .ics</a></p><p><strong>Speakers:</strong></p><div>{{speakers}}</div>${sign}`
   },
   reminder7d: {
     subject: 'One week to go – {{event}}',
