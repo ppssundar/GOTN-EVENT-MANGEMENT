@@ -5,7 +5,7 @@ const merge = (t, c) => t.replace(/\{\{(\w+)\}\}/g, (a, k) => (c[k] ?? a));
 // [email kind, minutes BEFORE event start]. Negative = after the event starts.
 const cadence = [['reminder7d', 7 * 1440], ['reminder1d', 1440], ['reminder1h', 60], ['thanks', -1440]];
 
-const sign = '\n\nThe GOTN Team';
+const sign = '\n\nThe GOTN India Team';
 const emails = {
   received: {
     subject: 'Payment received – your seat is under review',
