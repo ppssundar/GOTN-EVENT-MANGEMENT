@@ -29,11 +29,11 @@ const emails = {
   },
   thanks: {
     subject: 'Thanks for joining {{event}}',
-    body: `Hi {{name}},\n\nThank you for being part of {{event}}. Slides and recordings will follow soon.${sign}`
+    body: `<p>Hi {{name}},</p><p>Thank you for being part of {{event}}. Slides and recordings will follow soon.</p>${sign}`
   },
   declined: {
     subject: 'Your declined receipt – {{event}} (#{{receipt}})',
-    body: `DECLINED RECEIPT #{{receipt}}\n------------------------------\nItem:      1 x seat at {{event}}\nStatus:    Politely, firmly, regretfully NOT ACCEPTED\nRefund:    {{price}}. {{refundNote}}\nDrama:     0 (we checked)\n------------------------------\n\nHi {{name}},\n\n{{joke}}\n\nThank you for your interest. We hope to see you at the next one.${sign}`
+    body: `<p><strong>DECLINED RECEIPT #{{receipt}}</strong></p><table style="border-collapse: collapse; border-top: 1px dashed #999; border-bottom: 1px dashed #999; font-family: monospace; margin: 12px 0;"><tr><td style="padding: 6px 16px 2px 0;"><strong>Item:</strong></td><td style="padding: 6px 0 2px 0;">1 x seat at {{event}}</td></tr><tr><td style="padding: 2px 16px 2px 0;"><strong>Status:</strong></td><td style="padding: 2px 0;">Politely, firmly, regretfully NOT ACCEPTED</td></tr><tr><td style="padding: 2px 16px 2px 0;"><strong>Refund:</strong></td><td style="padding: 2px 0;">{{price}}. {{refundNote}}</td></tr><tr><td style="padding: 2px 16px 6px 0;"><strong>Drama:</strong></td><td style="padding: 2px 0 6px 0;">0 (we checked)</td></tr></table><p>Hi {{name}},</p><p>{{joke}}</p><p>Thank you for your interest. We hope to see you at the next one.</p>${sign}`
   }
 };
 
