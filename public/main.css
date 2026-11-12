@@ -22,9 +22,10 @@ img {
 
 .ban-bang {
     min-height: 500px;
-    background-size: contain;
+    background-size: cover;
     background-repeat: no-repeat;
-    padding: 220px 300px 100px 70px;
+    padding: 220px 300px 50px 70px;
+    border-radius: 8px;
 }
 
 .ban-bang h1 {
@@ -45,6 +46,36 @@ img {
 
 .ban-area {
     display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding-top: 30px;
+}
+
+.dte {
+    background-image: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8 2V5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' stroke='white'/%3E%3Cpath d='M16 2V5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' stroke='white'/%3E%3Cpath d='M5 3H19C20.1046 3 21 3.89543 21 5V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V5C3 3.89543 3.89543 3 5 3Z' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' stroke='white'/%3E%3Cpath d='M3 9H21' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' stroke='white'/%3E%3Cpath d='M9 15L11 17L15 13' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' stroke='white'/%3E%3C/svg%3E%0A");
+    background-repeat: no-repeat;
+    padding-left: 35px;
+    background-position: left center;
+}
+
+.loc {
+    background-image: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 10C20 14.993 14.461 20.193 12.601 21.799C12.4277 21.9293 12.2168 21.9998 12 21.9998C11.7832 21.9998 11.5723 21.9293 11.399 21.799C9.539 20.193 4 14.993 4 10C4 7.87827 4.84285 5.84344 6.34315 4.34315C7.84344 2.84285 9.87827 2 12 2C14.1217 2 16.1566 2.84285 17.6569 4.34315C19.1571 5.84344 20 7.87827 20 10Z' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' stroke='white'/%3E%3Cpath d='M15 10C15 11.6569 13.6569 13 12 13C10.3431 13 9 11.6569 9 10C9 8.34315 10.3431 7 12 7C13.6569 7 15 8.34315 15 10Z' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' stroke='white'/%3E%3C/svg%3E%0A");
+    background-repeat: no-repeat;
+    padding-left: 35px;
+    background-position: left center;
+}
+
+.time {
+    background-image: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' stroke='white'/%3E%3Cpath d='M12 6V12H8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' stroke='white'/%3E%3C/svg%3E%0A");
+    background-repeat: no-repeat;
+    padding-left: 35px;
+    background-position: left center;
+}
+
+.ban-area p {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 0;
 }
 
 .sec__2 h2 {
@@ -90,6 +121,35 @@ img {
     padding: 16px;
     border-radius: 10px;
     margin-bottom: 25px;
+}
+
+.form_box .price {
+    font-size: 40px;
+    color: #192F52;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.form_box input {
+    width: 100%;
+    background-color: #fff;
+    border: 1px solid #BEBEBE;
+    border-radius: 8px;
+    height: 46px;
+    font-size: 16px;
+    color: #000000;
+    margin-bottom: 10px;
+}
+
+.form_box button.p {
+    width: 100%;
+    border-radius: 8px;
+    background-color: #192F52;
+    border: none;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 10px;
 }
 
 .partnership_box {
@@ -174,7 +234,7 @@ img {
 .match-list {
     position: relative;
     padding-top: 60px;
-    padding-left: 40px;
+    padding-left: 30px;
     padding-right: 40px;
 }
 
@@ -184,7 +244,7 @@ img {
     width: 1px;
     height: 100%;
     background-color: #000000;
-    left: 46px;
+    left: 36px;
     top: 30px;
 }
 
@@ -193,6 +253,11 @@ img {
     background-repeat: no-repeat;
     padding-left: 40px;
     background-position: left top 4px;
+    padding-bottom: 20px;
+}
+
+.match-list-set:last-child {
+    padding-bottom: 0px;
 }
 
 .match-list-set h6 {
@@ -268,9 +333,8 @@ img {
 @media (max-width: 1199px) {
     .ban-bang {
         min-height: inherit;
-        background-size: contain;
         background-repeat: no-repeat;
-        padding: 120px 100px 20px 20px;
+        padding: 120px 20px 20px 20px;
         background-size: cover;
     }
 }
@@ -296,6 +360,9 @@ img {
         left: 26px;
     }
     .gtns {
+        font-size: 18px;
+    }
+    .ban-area p {
         font-size: 18px;
     }
 }
