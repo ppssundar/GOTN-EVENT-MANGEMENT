@@ -132,6 +132,7 @@ img {
 
 .form_box input {
     width: 100%;
+    padding-left: 10px;
     background-color: #fff;
     border: 1px solid #BEBEBE;
     border-radius: 8px;

@@ -181,7 +181,7 @@ async function pub(){
                             <div class="form_box">
                                 <aside><section class="c" id="tix"><div class="price">${e.price?'₹'+(e.price/100).toLocaleString('en-IN'):'Free'}</div>
    <!--<p class="mu">Seats are reviewed by the organizers. Declined registrations are refunded automatically.</p>-->
-   <form onsubmit="reg(event)"><label for="n">Full name<span class="req">*</span></label><input id="n" name="name" autocomplete="name" required><label for="m">Email<span class="req">*</span></label><input id="m" name="email" type="email" autocomplete="email" required><label for="ph">Phone<span class="req">*</span></label><input id="ph" name="phone" type="tel" autocomplete="tel" inputmode="tel" minlength="7" maxlength="20" pattern="[+0-9() .-]{7,20}" required><label for="o">Company<span class="req">*</span></label><input id="o" name="company" autocomplete="organization" required>
+   <form onsubmit="reg(event)"><input id="n" name="name" placeholder="Full name*" aria-label="Full name" autocomplete="name" required><input id="m" name="email" type="email" placeholder="Email*" aria-label="Email" autocomplete="email" required><input id="ph" name="phone" type="tel" placeholder="Phone*" aria-label="Phone" autocomplete="tel" inputmode="tel" minlength="7" maxlength="20" pattern="[+0-9() .-]{7,20}" required><input id="o" name="company" placeholder="Company*" aria-label="Company" autocomplete="organization" required>
    <button class="p">Pay and request a seat</button></form></section>
    <!--<p class="mu" style="font-size:13px"><a href="#admin">Organizer login</a></p></aside>-->
 
@@ -284,7 +284,7 @@ async function pub(){
                             <a href="https://gotn.in/newsletter/" class="elementor-item">Newsletter</a>
                         </div>
                         <div class="col-xl-2">
-                            <h6>Events</h6>
+                            <h6><a href="https://gotn.in/events/" class="elementor-item">Events</a></h6>
                         </div>
                         <div class="col-xl-3">
                             <h6> About GOTN</h6>
@@ -297,7 +297,7 @@ async function pub(){
             </div>
 
             <div class="cp-right">
-                <p>© 2026 GoTN.in. All Rights Reserved.</p> <a href="https://gotn.in/privacy-policy/" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+                <p>© 2026 GoTN.in. All Rights Reserved. &nbsp;<a href="https://gotn.in/privacy-policy/" target="_blank" rel="noopener noreferrer">Privacy Policy</a></p> 
             </div>
         </div>
     </footer>`;
