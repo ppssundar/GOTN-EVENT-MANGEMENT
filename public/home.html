@@ -138,7 +138,7 @@ async function pub(){
                             <div class="row">
                             ${d.speakers.map(s=>`<div class="col-md-4 mb-4"><div class="speaker_box">${s.photo?`<img src="${esc(s.photo)}" alt="${esc(s.name)}">`:`<div class="av">${esc(s.name[0]||'?')}</div>`}<div class="speaker_box_in"><h6>${esc(s.name)}, </h6><p>${esc(s.role)}</p></div></div></div>`).join('')||'<p class="mu">Speakers will be announced soon.</p>'}
                             </div>
-                            <div class="row">
+                            <!--<div class="row">
                                 <div class="col-md-4 mb-4">
                                     <div class="speaker_box">
                                         <img src="assets/img/spk.png" alt="GOTN Logo">
@@ -174,7 +174,7 @@ async function pub(){
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </div>-->
 
                         </div>
                         <div class="col-lg-4">
