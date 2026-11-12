@@ -135,8 +135,11 @@ async function pub(){
                             </ul>
 
                             <h3 class="pt-xl-5 pt-4 mb-xl-5 mb-4">Our list of speakers being confirmed include:</h3>
-
-                            ${d.speakers.map(s=>`<div class="sp">${s.photo?`<img src="${esc(s.photo)}" alt="${esc(s.name)}">`:`<div class="av">${esc(s.name[0]||'?')}</div>`}<div><b>${esc(s.name)}</b><br><span class="mu">${esc(s.role)}</span><br><i>${esc(s.talk)}</i>${s.linkedin?`<br><a href="${esc(s.linkedin)}" target="_blank" rel="noopener">LinkedIn profile</a>`:''}</div></div>`).join('')||'<p class="mu">Speakers will be announced soon.</p>'}
+                            <div class="row">
+                            <div class="col-md-4 mb-4">
+                            ${d.speakers.map(s=>`<div class="speaker_box">${s.photo?`<img src="${esc(s.photo)}" alt="${esc(s.name)}">`).join('')||'<p class="mu">Speakers will be announced soon.</p>'}
+                            </div>
+                            </div>
 
                             <div class="row">
                                 <div class="col-md-4 mb-4">
