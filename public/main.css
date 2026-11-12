@@ -330,12 +330,21 @@ img {
     color: #FD1A16
 }
 
+@media (max-width: 1399px) {
+    .ban-bang h1 {
+        font-size: 45px;
+    }
+}
+
 @media (max-width: 1199px) {
     .ban-bang {
         min-height: inherit;
         background-repeat: no-repeat;
         padding: 120px 20px 20px 20px;
         background-size: cover;
+    }
+    .ban-bang h1 {
+        font-size: 40px;
     }
 }
 
@@ -365,6 +374,13 @@ img {
     .ban-area p {
         font-size: 18px;
     }
+    .lists {
+        padding-left: 20px;
+    }
+    .speaker_box {
+        max-width: 200px;
+        margin: 0 auto;
+    }
 }
 
 @media (max-width:767px) {
@@ -380,5 +396,12 @@ img {
     }
     .go_back {
         font-size: 16px;
+    }
+}
+
+@media (max-width:575px) {
+    .ban-bang {
+        background-size: 134%;
+        background-color: #000;
     }
 }
