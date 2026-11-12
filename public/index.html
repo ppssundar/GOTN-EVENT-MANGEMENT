@@ -22,7 +22,7 @@ iframe{width:100%;height:240px;border:0;border-radius:8px;margin:10px 0}
 .pill{display:inline-block;background:var(--bg);border-radius:99px;padding:2px 12px;margin:3px 4px 3px 0;font-size:14px}
 .price{font:700 34px Georgia}
 input,textarea,select{width:100%;padding:9px 10px;border:1px solid var(--bd);border-radius:7px;font:inherit;background:#fff;color:var(--tx)}
-textarea{min-height:110px}label{display:block;font-size:13px;color:var(--mu);margin:10px 0 3px}
+textarea{min-height:110px}.req{color:#c62828;font-weight:700;margin-left:2px}label{display:block;font-size:13px;color:var(--mu);margin:10px 0 3px}
 button{font:inherit;cursor:pointer;border-radius:7px;padding:9px 15px;border:1px solid var(--bd);background:#fff;color:var(--tx)}
 button.p{background:var(--ac);border-color:var(--ac);color:#fff;font-weight:600;width:100%;margin-top:14px}
 button.p.inl{width:auto}button.ok{background:var(--ac);color:#fff;border-color:var(--ac)}button.no{color:#a32020}
@@ -60,7 +60,7 @@ async function pub(){
     <a href="https://www.google.com/maps/search/?api=1&query=${loc}" target="_blank" rel="noopener">Open in Google Maps</a></section>${who}
   </main><aside><section class="c" id="tix"><div class="price">${e.price?'₹'+(e.price/100).toLocaleString('en-IN'):'Free'}</div>
    <p class="mu">Seats are reviewed by the organizers. Declined registrations are refunded automatically.</p>
-   <form onsubmit="reg(event)"><label for="n">Full name</label><input id="n" name="name" required><label for="m">Email</label><input id="m" name="email" type="email" required><label for="o">Company (optional)</label><input id="o" name="company">
+   <form onsubmit="reg(event)"><label for="n">Full name<span class="req">*</span></label><input id="n" name="name" autocomplete="name" required><label for="m">Email<span class="req">*</span></label><input id="m" name="email" type="email" autocomplete="email" required><label for="ph">Phone<span class="req">*</span></label><input id="ph" name="phone" type="tel" autocomplete="tel" inputmode="tel" minlength="7" maxlength="20" pattern="[+0-9() .-]{7,20}" required><label for="o">Company<span class="req">*</span></label><input id="o" name="company" autocomplete="organization" required>
    <button class="p">Pay and request a seat</button></form></section>
    <p class="mu" style="font-size:13px"><a href="#admin">Organizer login</a></p></aside></div>`;
 }
@@ -73,7 +73,7 @@ async function reg(x){
     $('#tix').innerHTML=v.ok?`<h3>Payment received</h3><p>Your registration is under review. We'll email <b>${esc(o.email)}</b> with the decision.</p>`:'<h3>Verification failed</h3><p>Contact the organizers with your payment ID.</p>'};
   if(o.demo)return done({razorpay_order_id:o.orderId,razorpay_payment_id:'pay_demo_'+o.regId,razorpay_signature:'demo'});
   await loadRzp();
-  new Razorpay({key:o.keyId,order_id:o.orderId,amount:o.amount,currency:'INR',name:o.eventName,prefill:{name:o.name,email:o.email},theme:{color:'#0e5d4b'},handler:done,modal:{ondismiss:()=>b.disabled=false}}).open();
+  new Razorpay({key:o.keyId,order_id:o.orderId,amount:o.amount,currency:'INR',name:o.eventName,prefill:{name:o.name,email:o.email,contact:o.phone},theme:{color:'#0e5d4b'},handler:done,modal:{ondismiss:()=>b.disabled=false}}).open();
 }
 
 /* ---------------- admin ---------------- */
@@ -90,16 +90,32 @@ function sync(){const v=k=>$('#f_'+k).value,e=D.event;F.forEach(([k])=>e[k]=v(k)
 async function saveEv(){sync();await A('/api/admin/event','PUT',D.event);toast('Event saved')}
 async function saveSp(){await A('/api/admin/speakers','PUT',D.speakers);toast('Speakers saved')}
 async function banner(i){sync();const u=await upl(i);if(u){D.event.banner=u;draw()}}
+function removeBanner(){sync();D.event.banner='';draw()}
 async function photo(i,inp){sync();const u=await upl(inp);if(u){D.speakers[i].photo=u;draw()}}
 function addSp(){sync();D.speakers.push({name:'',role:'',talk:'',photo:'',linkedin:''});draw()}
 function delSp(i){sync();D.speakers.splice(i,1);draw()}
 async function decide(id,d){if(!confirm(d==='accepted'?'Accept this registration and notify them?':'Decline, refund and send the declined receipt?'))return;const j=await A(`/api/admin/regs/${id}/decision`,'POST',{decision:d});if(j.ok){toast(d==='accepted'?'Accepted, email queued':'Declined, receipt sent');admin()}}
+async function exportRegs(format){
+  if(!D.regs.length)return;
+  const r=await fetch(`/api/admin/regs/export?format=${format}`,{headers:{'x-admin-password':pw}});
+  if(!r.ok){const j=await r.json().catch(()=>({}));toast(j.error||'Export failed');return}
+  const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download=`eventdesk-registrations.${format}`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+  toast(`Downloaded ${format.toUpperCase()} registration data`);
+}
+async function resetRegs(){
+  if(!D.totalRegs){toast('There are no registration records to reset');return}
+  if(!confirm('Reset all registration details? This permanently deletes all registration records and queued registration emails. This cannot be undone.'))return;
+  if(!confirm('Please confirm once more: permanently clear ALL registration details?'))return;
+  const j=await A('/api/admin/regs','DELETE');
+  if(j.ok){toast('All registration details have been cleared');await admin()}
+}
 function draw(){
   const e=D.event,pend=D.regs.filter(r=>r.status==='pending_review').length;
   $('#app').innerHTML=`<h1>Organizer dashboard</h1><p><a href="#">← View public page</a></p>
-  <section class="c"><h2>Registrations <small class="mu">(${pend} awaiting review)</small></h2><div class="scroll">${D.regs.length?`<table><tr><th>Name</th><th>Email</th><th>Company</th><th>Payment</th><th>Status</th><th></th></tr>${D.regs.map(r=>`<tr><td>${esc(r.name)}</td><td>${esc(r.email)}</td><td>${esc(r.company)}</td><td>${esc(r.payment_id)}</td><td><span class="st ${r.status}">${r.status.replace('_',' ')}</span></td><td>${r.status==='pending_review'?`<button class="ok" onclick="decide(${r.id},'accepted')">Accept</button> <button class="no" onclick="decide(${r.id},'declined')">Decline</button>`:''}</td></tr>`).join('')}</table>`:'<p class="mu">No paid registrations yet. Register from the public page to test the flow.</p>'}</div></section>
+  <section class="c"><h2>Registrations <small class="mu">(${pend} awaiting review)</small></h2><div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px"><button type="button" onclick="exportRegs('xlsx')" ${D.regs.length?'':'disabled'}>Export XLSX</button><button type="button" onclick="exportRegs('csv')" ${D.regs.length?'':'disabled'}>Export CSV</button><button type="button" class="no" onclick="resetRegs()" ${D.totalRegs?'':'disabled'}>Reset registrations</button></div><div class="scroll">${D.regs.length?`<table><tr><th>Name</th><th>Email</th><th>Company</th><th>Phone</th><th>Payment</th><th>Status</th><th></th></tr>${D.regs.map(r=>`<tr><td>${esc(r.name)}</td><td>${esc(r.email)}</td><td>${esc(r.company)}</td><td>${esc(r.phone)}</td><td>${esc(r.payment_id)}</td><td><span class="st ${r.status}">${r.status.replace('_',' ')}</span></td><td>${r.status==='pending_review'?`<button class="ok" onclick="decide(${r.id},'accepted')">Accept</button> <button class="no" onclick="decide(${r.id},'declined')">Decline</button>`:''}</td></tr>`).join('')}</table>`:'<p class="mu">No paid registrations yet. Register from the public page to test the flow.</p>'}</div></section>
   <section class="c"><h2>Event page</h2>
-   <label>Banner image</label>${e.banner?`<img class="bthumb" src="${esc(e.banner)}" alt="">`:''}<input type="file" accept="image/*" onchange="banner(this)">
+   <label>Banner image</label>${e.banner?`<img class="bthumb" src="${esc(e.banner)}" alt="Current banner"><div style="margin:6px 0 10px"><button type="button" class="no" onclick="removeBanner()">Remove current image</button></div>`:'<p class="mu">No banner image selected.</p>'}<label for="banner_upload">${e.banner?'Replace image':'Upload image'}</label><input id="banner_upload" type="file" accept="image/png,image/jpeg,image/webp,image/gif" onchange="banner(this)">
    <div class="row2">${F.map(([k,l,t])=>`<div><label for="f_${k}">${l}</label><input id="f_${k}" type="${t||'text'}" value="${esc(k==='price'?e.price/100:e[k])}"></div>`).join('')}</div>
    <label for="f_description">Description</label><textarea id="f_description">${esc(e.description)}</textarea>
    <label for="f_visibility">Who sees the attendee list?</label><select id="f_visibility">${[['public','Show full names (accepted only)'],['masked','Show masked names, e.g. P••••• S•••'],['count','Show only the count'],['hidden','Hide completely']].map(([v,l])=>`<option value="${v}" ${e.visibility===v?'selected':''}>${l}</option>`).join('')}</select>

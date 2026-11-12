@@ -13,13 +13,17 @@ const db = new Database('data/app.db');
 db.exec(`
 CREATE TABLE IF NOT EXISTS event(id INTEGER PRIMARY KEY CHECK(id=1),name,tagline,description,day,t_start,t_end,venue,address,price INTEGER,banner,visibility,capacity INTEGER);
 CREATE TABLE IF NOT EXISTS speakers(id INTEGER PRIMARY KEY,name,role,talk,photo,linkedin);
-CREATE TABLE IF NOT EXISTS regs(id INTEGER PRIMARY KEY,name,email,company,status,order_id,payment_id,refund_id,created_at DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS regs(id INTEGER PRIMARY KEY,name,email,company,phone,status,order_id,payment_id,refund_id,created_at DEFAULT CURRENT_TIMESTAMP);
 CREATE TABLE IF NOT EXISTS queue(id INTEGER PRIMARY KEY,reg_id INTEGER,kind,to_email,subject,body,send_at,sent_at);`);
+// Migrate existing databases without losing registrations.
+if (!db.prepare('PRAGMA table_info(regs)').all().some(c => c.name === 'phone')) db.exec('ALTER TABLE regs ADD COLUMN phone TEXT NOT NULL DEFAULT \'\'');
 if (!db.prepare('SELECT 1 FROM event').get())
   db.prepare('INSERT INTO event VALUES(1,?,?,?,?,?,?,?,?,?,?,?,?)').run(
     'Bengaluru Product Summit 2026', 'A one-day conference on building products people love.',
     'Talks, workshops and long coffee breaks for product people.\n\nExpect practical sessions, no fluff.',
-    '2026-12-05', '10:00', '17:30', 'Taj Yeshwantpur', '2275, Tumkur Rd, Yeshwantpur, Bengaluru 560022', 149900, '', 'masked', 300);
+    '2026-12-05', '10:00', '17:30', 'Taj Yeshwantpur', '2275, Tumkur Rd, Yeshwantpur, Bengaluru 560022', 350000, '', 'masked', 300);
+// Update the previous default ticket price without overwriting custom admin pricing.
+db.prepare('UPDATE event SET price=350000 WHERE id=1 AND price=149900').run();
 
 // ---------- helpers ----------
 const ev = () => db.prepare('SELECT * FROM event WHERE id=1').get();
@@ -52,7 +56,7 @@ async function flush() { // sends everything that is due; prints to console when
   const due = db.prepare('SELECT * FROM queue WHERE sent_at IS NULL AND send_at<=?').all(new Date().toISOString());
   for (const m of due) {
     try {
-      if (mailer) await mailer.sendMail({ from: E.MAIL_FROM || 'EventDesk <no-reply@example.com>', to: m.to_email, subject: m.subject, html: m.body });
+      if (mailer) await mailer.sendMail({ from: E.MAIL_FROM || 'EventDesk <no-reply@example.com>', to: m.to_email, subject: m.subject, text: m.body });
       else console.log(`\n[MAIL -> ${m.to_email}] ${m.subject}\n${m.body}\n`);
       db.prepare('UPDATE queue SET sent_at=? WHERE id=?').run(new Date().toISOString(), m.id);
     } catch (err) { console.error('mail failed', m.id, err.message); }
@@ -78,15 +82,15 @@ app.get('/api/event', (q, s) => {
 
 app.post('/api/register', async (q, s) => {
   try {
-    const n = (q.body.name || '').trim().slice(0, 80), m = (q.body.email || '').trim().toLowerCase().slice(0, 120), c = (q.body.company || '').trim().slice(0, 80);
-    if (!n || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(m)) return s.status(400).json({ error: 'Enter a name and a valid email.' });
+    const n = (q.body.name || '').trim().slice(0, 80), m = (q.body.email || '').trim().toLowerCase().slice(0, 120), c = (q.body.company || '').trim().slice(0, 80), phone = (q.body.phone || '').trim().slice(0, 20);
+    if (!n || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(m) || !c || !/^[+0-9() .-]{7,20}$/.test(phone) || phone.replace(/\D/g, '').length < 7 || phone.replace(/\D/g, '').length > 15) return s.status(400).json({ error: 'Enter your full name, a valid email, company and valid phone number.' });
     const e = ev();
     if (db.prepare("SELECT COUNT(*) n FROM regs WHERE status IN('accepted','pending_review')").get().n >= e.capacity) return s.status(409).json({ error: 'This event is sold out.' });
     if (db.prepare("SELECT 1 FROM regs WHERE email=? AND status IN('accepted','pending_review')").get(m)) return s.status(409).json({ error: 'This email is already registered.' });
-    const id = db.prepare("INSERT INTO regs(name,email,company,status) VALUES(?,?,?,'unpaid')").run(n, m, c).lastInsertRowid;
+    const id = db.prepare("INSERT INTO regs(name,email,company,phone,status) VALUES(?,?,?,?, 'unpaid')").run(n, m, c, phone).lastInsertRowid;
     const order = LIVE ? await rp.orders.create({ amount: e.price, currency: 'INR', receipt: 'reg_' + id }) : { id: 'order_demo_' + id };
     db.prepare('UPDATE regs SET order_id=? WHERE id=?').run(order.id, id);
-    s.json({ regId: id, orderId: order.id, amount: e.price, keyId: E.RAZORPAY_KEY_ID || null, demo: !LIVE, name: n, email: m, eventName: e.name });
+    s.json({ regId: id, orderId: order.id, amount: e.price, keyId: E.RAZORPAY_KEY_ID || null, demo: !LIVE, name: n, email: m, phone, eventName: e.name });
   } catch (err) { console.error(err); s.status(500).json({ error: 'Could not start payment. Try again.' }); }
 });
 
@@ -118,7 +122,50 @@ app.get('/api/ics', (q, s) => {
 const h = x => crypto.createHash('sha256').update(x || '').digest();
 app.use('/api/admin', (q, s, n) => (crypto.timingSafeEqual(h(q.get('x-admin-password')), h(ADMIN)) ? n() : s.status(401).json({ error: 'Unauthorized' })));
 
-app.get('/api/admin/data', (q, s) => s.json({ event: ev(), speakers: speakers(), regs: db.prepare("SELECT * FROM regs WHERE status!='unpaid' ORDER BY id DESC").all() }));
+app.get('/api/admin/data', (q, s) => s.json({ event: ev(), speakers: speakers(), regs: db.prepare("SELECT * FROM regs WHERE status!='unpaid' ORDER BY id DESC").all(), totalRegs: db.prepare('SELECT COUNT(*) n FROM regs').get().n }));
+
+// Export the same registration records shown in the organizer dashboard.
+app.get('/api/admin/regs/export', async (q, s) => {
+  const rows = db.prepare("SELECT id, name, email, company, phone, status, order_id, payment_id, refund_id, created_at FROM regs WHERE status!='unpaid' ORDER BY id DESC").all();
+  const columns = ['id', 'name', 'email', 'company', 'phone', 'status', 'order_id', 'payment_id', 'refund_id', 'created_at'];
+  const format = String(q.query.format || '').toLowerCase();
+  if (format === 'csv') {
+    const cell = value => '"' + String(value ?? '').replace(/"/g, '""') + '"';
+    const csv = [columns, ...rows.map(row => columns.map(key => row[key]))].map(row => row.map(cell).join(',')).join('\r\n');
+    s.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    s.setHeader('Content-Disposition', 'attachment; filename="eventdesk-registrations.csv"');
+    return s.send('\uFEFF' + csv);
+  }
+  if (format === 'xlsx') {
+    try {
+      // ExcelJS replaces the vulnerable SheetJS `xlsx` package.
+      const ExcelJS = require('exceljs');
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Registrations');
+      worksheet.columns = columns.map(key => ({ header: key, key, width: Math.max(14, key.length + 3) }));
+      worksheet.addRows(rows);
+      worksheet.getRow(1).font = { bold: true };
+      worksheet.views = [{ state: 'frozen', ySplit: 1 }];
+      const buffer = await workbook.xlsx.writeBuffer();
+      s.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      s.setHeader('Content-Disposition', 'attachment; filename="eventdesk-registrations.xlsx"');
+      return s.send(Buffer.from(buffer));
+    } catch (error) {
+      console.error('XLSX export failed:', error);
+      return s.status(500).json({ error: 'Could not generate the XLSX export.' });
+    }
+  }
+  return s.status(400).json({ error: 'Format must be csv or xlsx.' });
+});
+
+// Remove registration records and their queued emails in one transaction.
+app.delete('/api/admin/regs', (q, s) => {
+  db.transaction(() => {
+    db.prepare('DELETE FROM queue WHERE reg_id IN (SELECT id FROM regs)').run();
+    db.prepare('DELETE FROM regs').run();
+  })();
+  s.json({ ok: true });
+});
 
 app.post('/api/admin/upload', upload.single('file'), (q, s) =>
   q.file ? s.json({ url: '/uploads/' + q.file.filename }) : s.status(400).json({ error: 'Upload a png, jpg, webp or gif under 5 MB.' }));
