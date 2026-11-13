@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Event Registration &#8211; GoTN.in </title>
-<link rel="icon" href="assets/img/favicon.ico" type="image/x-icon">
+<link rel="icon" type="image/png" href="/assets/img/favicon.png">
+<link rel="apple-touch-icon" href="/assets/img/favicon.png">
+<title>Event Registration | GoTN.in</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap');
@@ -21,7 +22,7 @@ addEventListener('hashchange',route);route();
 
 /* ---------------- public page ---------------- */
 async function pub(){
-  const d=await (await fetch('/api/event')).json(),e=d.event,loc=encodeURIComponent(e.venue+', '+e.address);document.title=e.name;
+  const d=await (await fetch('/api/event')).json(),e=d.event,loc=encodeURIComponent(e.venue+', '+e.address);
   const people=d.attendees.map(a=>`<span class="pill">${esc(a.name)}${a.company?' · '+esc(a.company):''}</span>`).join('');
   const who=e.visibility==='hidden'?'':`<section class="c"><h3>Who's going${d.acceptedCount!=null?' ('+d.acceptedCount+')':''}</h3>${people||`<p class="mu">${d.acceptedCount} confirmed so far. Names are kept private.</p>`}${e.visibility==='masked'?'<p class="mu">Names are masked to protect attendee privacy.</p>':''}</section>`;
   $('#app').innerHTML=`    <section class="pt-xl-5 pt-4">
