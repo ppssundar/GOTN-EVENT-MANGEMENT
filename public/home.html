@@ -43,38 +43,11 @@ async function pub(){
         </div>
     </section>
 
-    <!--<section class="pt-4">
-          <div class="container">
-              <div class="row justify-content-center">
-                  <div class="col-lg-10 px-lg-5">
-                      <div class="ban ban-bang" style="${e.banner?`background-image:url('${esc(e.banner)}')`:''}">
-                          <div>
-                              <h1>${esc(e.name)}</h1>
-                              <p>Desc ${esc(e.tagline)}</p>
-
-                              <div class="ban-area">
-                                  <div class="dte">
-                                      <p> ${new Date(e.day).toLocaleDateString('en-US', {month: 'short',day: 'numeric',year: 'numeric'})} </p>
-                                  </div>
-                                  <div class="loc">
-                                      <p> ${esc(e.venue)} </p>
-                                  </div>
-                                  <div class="time">
-                                      <p>${esc(e.t_start)} onwards</p>
-                                  </div>
-                              </div>
-                          </div>
-                      </div>
-                  </div>
-              </div>
-          </div>
-      </section>-->
-
 <section class="pt-4">
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-lg-10 px-lg-5">
-                    <div class="ban ban-bang" style="background-image: url('assets/img/bang-ban.png');" style="${e.banner?`background-image:url('${esc(e.banner)}')`:''}">
+                    <div class="ban ban-bang" style="${e.banner?`background-image:url('${esc(e.banner)}')`:''}">
                         <div>
                             <div class="ban__img">
                                 <img src="assets/img/ex-logo.png" alt="GOTN Logo">
@@ -337,48 +310,7 @@ async function pub(){
                 <p class="d-inline-block">© 2026 GoTN.in. All Rights Reserved.</p> &nbsp; &nbsp; <span class="dotd">.</span> &nbsp; &nbsp; <a class="d-inline-block text-white text-decoration-none" href="https://gotn.in/privacy-policy/" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
             </div>
         </div>
-    </footer>
-
-    <!--<footer class="footer-v1 text-white">
-        <div class="container-xxl foot-container">
-            <div class="row">
-                <div class="col-xl-5">
-                    <h2 class="size-default">THE PORTAL INTO ENTREPRENEURSHIP IN TAMIL NADU</h2>
-                </div>
-                <div class="col-xl-7">
-                    <div class="row">
-                        <div class="col-xl-4">
-                            <h6>Stories</h6>
-                            <a href="https://gotn.in/stories/small-business/" class="elementor-item">Micro &amp; Emerging Small Units</a>
-                            <a href="https://gotn.in/stories/high-growth-company/" class="elementor-item">High Growth Company</a>
-                            <a href="https://gotn.in/stories/startup/" class="elementor-item">Established &amp; Large Enterprises</a>
-                            <a href="https://gotn.in/stories/non-profit-organization/" class="elementor-item">Non Profit Organization</a>
-
-                        </div>
-                        <div class="col-xl-3">
-                            <h6>Resources</h6>
-                            <a href="https://gotn.in/resources/tamil-nadu-policies/" class="elementor-item">Tamil Nadu Vision</a>
-                            <a href="https://gotn.in/curated-gift-hampers/" class="elementor-item">Curated Gift Hampers</a>
-                            <a href="https://gotn.in/newsletter/" class="elementor-item">Newsletter</a>
-                        </div>
-                        <div class="col-xl-2">
-                            <h6><a href="https://gotn.in/events/" class="elementor-item">Events</a></h6>
-                        </div>
-                        <div class="col-xl-3">
-                            <h6> About GOTN</h6>
-                            <a href="https://gotn.in/about-us/" class="elementor-item">About GOTN</a>
-                            <a target="_blank" href="https://docs.google.com/forms/d/1pL38YXEwo3BmwIMbNNM_uVWRY1FogPN9nbbNzTw4Olg/viewform?edit_requested=true" class="elementor-item">Subscribe</a>
-                            <a href="https://gotn.in/get-in-touch/" class="elementor-item">Get in Touch</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="cp-right">
-                <p>© 2026 GoTN.in. All Rights Reserved. &nbsp;<a href="https://gotn.in/privacy-policy/" target="_blank" rel="noopener noreferrer">Privacy Policy</a></p> 
-            </div>
-        </div>
-    </footer>-->`;
+    </footer>`;
 }
 const loadRzp=()=>window.Razorpay?0:new Promise(r=>{const s=document.createElement('script');s.src='https://checkout.razorpay.com/v1/checkout.js';s.onload=r;document.head.append(s)});
 async function reg(x){
