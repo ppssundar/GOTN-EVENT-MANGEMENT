@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" type="image/png" href="assets/img/favicon.png">
+<link rel="apple-touch-icon" href="assets/img/favicon.png">
+<title>Event Registration | GoTN.in</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap');
+    </style>
+    <link href="main.css" rel="stylesheet" />
+</head><body class="position-relative figtree">
+<div class="w" id="app"></div><div id="t" role="status"></div>
+<script>
+const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const toast=m=>{const t=$('#t');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',2200)};
+const fmtDate=d=>new Date(d+'T00:00').toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+const J=(b)=>({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});
+let pw=sessionStorage.pw||'',D;
+const route=()=>location.hash==='#admin'?admin():pub();
+addEventListener('hashchange',route);route();
+
+/* ---------------- public page ---------------- */
+async function pub(){
+  const d=await (await fetch('/api/event')).json(),e=d.event,loc=encodeURIComponent(e.venue+', '+e.address);
+  const people=d.attendees.map(a=>`<span class="pill">${esc(a.name)}${a.company?' · '+esc(a.company):''}</span>`).join('');
+  const who=e.visibility==='hidden'?'':`<section class="c"><h3>Who's going${d.acceptedCount!=null?' ('+d.acceptedCount+')':''}</h3>${people||`<p class="mu">${d.acceptedCount} confirmed so far. Names are kept private.</p>`}${e.visibility==='masked'?'<p class="mu">Names are masked to protect attendee privacy.</p>':''}</section>`;
+  $('#app').innerHTML=`    <section class="pt-xl-5 pt-4">
+        <div class="container">
+            <div class="row justify-content-center ">
+                <div class="col-lg-10 px-lg-5">
+                    <div class="row justify-content-center align-items-center">
+                        <div class="col-6">
+                            <a href="https://gotn.in/" target="_blank" rel="noopener noreferrer">
+                                <img src="assets/img/gtn-logo.svg" alt="GOTN Logo">
+                            </a>
+                        </div>
+                        <div class="col-6 text-end">
+                            <a href="https://gotn.in/" class="go_back">Back to home</a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+<section class="pt-4">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10 px-lg-5">
+                    <div class="ban ban-bang" style="${e.banner?`background-image:url('${esc(e.banner)}')`:''}">
+                        <div>
+                            <div class="ban__img">
+                                <img src="assets/img/ex-logo.png" alt="GOTN Logo">
+                            </div>
+                            <h1>${esc(e.name)}</h1>
+                            <p>${esc(e.tagline)}</p>
+
+                            <div class="ban-area">
+                                <div class="dte">
+                                    <p> ${new Date(e.day).toLocaleDateString('en-US', {month: 'short',day: 'numeric',year: 'numeric'})} </p>
+                                </div>
+                                <div class="loc">
+                                    <p> ${esc(e.venue)} </p>
+                                </div>
+                                <div class="time">
+                                    <p>${new Date(`${new Date().toISOString().split('T')[0]}T${e.t_start}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).replace(' ', '')} onwards</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+          <section class="pt-4 sec__2">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10 px-lg-5">
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <h2>What is the</h2>
+                            <img src="assets/img/enterpr.png" alt="GOTN Logo">
+                            <h5 class="pt-xl-5 pt-4 mb-0 gtns">GoTN has been telling the stories of Tamil Nadu's entrepreneurs, from home-grown brands to high-growth companies. The Entrepreneurs’ Exchange brings those stories into one room. The aim is simple: a small-business owner should
+                                leave with three things—a new contact who can help, one idea they can use on Monday, and a promise they've made to themselves and will keep.</h5>
+
+                            <h3 class="pt-xl-5 pt-4 mb-4 pb-xl-2">What attendees take away</h3>
+
+                            <div class="">
+                                <ul class="px-3">
+                                    <li class="ll__0 li__1">Real conversations with other CEOs, not just business-card swaps</li>
+                                    <li class="ll__0 li__2">Practical playbooks on sales, AI-era marketing, small-brand building, hiring and exporting</li>
+                                    <li class="ll__0 li__3">A 30-day action plan they write on the day</li>
+                                    <li class="ll__0 li__4">Visibility, through GoTN stories, the directory and the newsletter</li>
+
+                                </ul>
+                            </div>
+
+                            <div class="pt-xl-5 pt-4 mt-xl-5">
+                                <img src="assets/img/swami.png" alt="GOTN Logo">
+                            </div>
+
+                            <h3 class="pt-xl-5 pt-4">We are designing practical strategies for this event including:</h3>
+
+
+                            <div class="match-list">
+                                <div class="match-list-set">
+                                    <h6>Founder matching</h6>
+                                    <p>A pre-event form collects each founder's industry, size, and what they o er and need; GoTN pairs them for speed-meets</p>
+                                </div>
+                                <div class="match-list-set">
+                                    <h6>Topic lunch tables</h6>
+                                    <p>Hosted by volunteer CEOs</p>
+                                </div>
+                                <div class="match-list-set">
+                                    <h6>Mentor corner</h6>
+                                    <p>20-minute slots with experienced CEOs, booked on the day</p>
+
+                                </div>
+                                <div class="match-list-set">
+                                    <h6>Directory sign-up desk</h6>
+                                    <p>Attendees can be listed in the GoTN directory</p>
+                                </div>
+
+                                <div class="match-list-set">
+                                    <h6>Marketplace</h6>
+                                    <p>Stalls for GoTN-featured brands, tying the event to the GoTN shop Contact exchange: a shared digital list, opt-in only, sent after the event</p>
+                                </div>
+
+                            </div>
+
+
+                            <h3 class="pt-xl-5 pt-4 mb-4 pb-xl-3">Who should attend</h3>
+                            <ul class="lists">
+                                <li>CEOs who would like to scale their business and learn from experts</li>
+                                <li>Founders looking to raise capital, exit strategies, and M&A</li>
+                                <li>Leaders who are looking to begin their entrepreneurial journey</li>
+                                <li>Service providers who target CEOs for their business—finance, automotive, insurance, and so on</li>
+                            </ul>
+
+                            <h3 class="pt-xl-5 pt-4 mb-xl-5 mb-4">Our list of speakers being confirmed include:</h3>
+                            <div class="row">
+                            ${d.speakers.map(s=>`<div class="col-xl-4 col-md-6 col-sm-6 mb-4"><div class="speaker_box">${s.photo?`<!--<img src="${esc(s.photo)}" alt="${esc(s.name)}">-->`:`<div class="av">${esc(s.name[0]||'?')}</div>`}<div class="speaker_box_in"><h6>${esc(s.name)} </h6><p>${esc(s.role)}</p></div></div></div>`).join('')||'<p class="mu">Speakers will be announced soon.</p>'}
+                            </div>
+                            <!--<div class="row">
+                                <div class="col-xl-4 col-md-6 col-sm-6 mb-4">
+                                    <div class="speaker_box">
+                                        <img src="assets/img/spk.png" alt="GOTN Logo">
+                                        <div class="speaker_box_in">
+                                            <h6>Rohit Raheja, </h6>
+                                            <p>CEO, Mentor Match</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-4">
+                                    <div class="speaker_box">
+                                        <img src="assets/img/spk.png" alt="GOTN Logo">
+                                        <div class="speaker_box_in">
+                                            <h6>Rohit Raheja, </h6>
+                                            <p>CEO, Mentor Match</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-4">
+                                    <div class="speaker_box">
+                                        <img src="assets/img/spk.png" alt="GOTN Logo">
+                                        <div class="speaker_box_in">
+                                            <h6>Rohit Raheja, </h6>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-4">
+                                    <div class="speaker_box">
+                                        <img src="assets/img/spk.png" alt="GOTN Logo">
+                                        <div class="speaker_box_in">
+                                            <h6>Rohit Raheja, </h6>
+                                            <p>CEO, Mentor Match</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>-->
+
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="form_box">
+                                <aside><section class="c" id="tix"><p><b>Early Bird Price Ending Nov 30, 2026</b></p><div class="price">${e.price?'₹'+(e.price/100).toLocaleString('en-IN'):'Free'}</div>
+   <!--<p class="mu">Seats are reviewed by the organizers. Declined registrations are refunded automatically.</p>-->
+   <form onsubmit="reg(event)"><input id="n" name="name" placeholder="Full name*" aria-label="Full name" autocomplete="name" required><input id="m" name="email" type="email" placeholder="Email*" aria-label="Email" autocomplete="email" required><input id="ph" name="phone" type="tel" placeholder="Phone*" aria-label="Phone" autocomplete="tel" inputmode="tel" minlength="7" maxlength="20" pattern="[+0-9() .-]{7,20}" required><input id="o" name="company" placeholder="Company*" aria-label="Company" autocomplete="organization" required>
+   <button class="p">Pay and request a seat</button></form></section>
+   <!--<p class="mu" style="font-size:13px"><a href="#admin">Organizer login</a></p></aside>-->
+
+                            </div>
+
+
+                            <div class="partnership_box">
+                                <h5>Partnership options</h5>
+                                <div class="box__1">
+                                    <h6>Title Sponsor <br>(INR 500,000)</h6>
+                                    <p>Event naming, opening remarks, a keynote or session slot, a premium stall, branding on all material, and a feature story on GoTN.in</p>
+                                </div>
+                                <div class="box__1">
+                                    <h6>Session Sponsor <br>(INR 300,000)</h6>
+                                    <p>Branding on one session, a short introduction, a stall, and a newsletter mention</p>
+                                </div>
+                                <div class="box__1">
+                                    <h6>Networking Partner<br>(INR 150,000)</h6>
+                                    <p>Branding on the networking lounge, lunch tables or speed-meets, and a stall</p>
+                                </div>
+                                <div class="box__1">
+                                    <h6>Community Partner (in-kind)</h6>
+                                    <p>Venue, food, printing, technology or media support, with logo placement</p>
+                                </div>
+                                <div class="box__1">
+                                    <h6>Marketplace Stall<br>(INR 50,000)</h6>
+                                    <p>A stall to meet attendees directly</p>
+                                </div>
+
+                                <h5 class="mt-4">Why partner with us</h5>
+                                <div class="box__set_2">
+                                    <p><b>A focused audience:</b> decisionmakers who run small businesses and are actively looking for tools, services and partners in areas such as banking, software, logistics, marketing, hiring, export services</p>
+                                    <p><b>Real engagement, not just a logo:</b> sponsors can host workshops, run stalls and meet founders directly</p>
+                                    <p><b>Ongoing visibility:</b> GoTN's stories, directory, daily newsletter and social channels extend your reach before and after the event</p>
+                                    <p><b>A meaningful cause:</b> supporting small-business growth in Tamil Nadu</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="pb-xl-5 pb-4 mb-xl-5 pt-xl-5 pt-4">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10 px-lg-5">
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <img src="assets/img/foot-map.png" alt="GOTN Logo">
+
+
+                            <div class="d-flex ud_flex">
+                                <div class="ud_flex_img">
+                                    <a href="https://gotn.in/" target="_blank" rel="noopener noreferrer">
+                                        <img src="assets/img/gtn-logo.svg" alt="GOTN Logo">
+                                    </a>
+                                </div>
+                                <div class="">
+                                    <p>Launched in 2020, on the heels of COVID recovery, GoTN.in is a portal for Tamil Nadu entrepreneurs, non-profits, and service providers. Our goal has been to celebrate the entrepreneurial ecosystem of Tamil Nadu, bring
+                                        CEOs to common exchange of ideas, support, and growth, while promoting their products and services on our e-commerce platform. Founded by Karthik Sundaram and Akther Ghori, serial entrepreneurs themselves, GoTN
+                                        is emerging to be the leading voice for the start-up ecosystem of Tamil Nadu. Come, join us nurture the entrepreneurial spirit of our beloved state.</p>
+
+                                    <a href="mailto:info@gotn.in" class="mail-web">@ info@gotn.in</a>
+                                    <a href="https://gotn.in/" class="mail-web px-xl-4"><img src="assets/img/ww.svg" alt="gotn.in"> www.gotn.in</a>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+<footer class="footer-v1 text-white">
+        <div class="container-xxl foot-container">
+            <div class="row">
+                <div class="col-lg-5 mb-4">
+                    <div class="d-flex ft-l">
+                        <div class="ft-logo">
+                            <img src="assets/img/footer-logo.svg" alt="footer-logo">
+                        </div>
+                        <div class="">
+                            <h2 class="size-default">THE PORTAL INTO ENTREPRENEURSHIP IN TAMIL NADU</h2>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="col-lg-7">
+                    <div class="row">
+                        <div class="col-xl-4 col-lg-4 col-md-4 col-sm-6 col-6 mb-4">
+                            <h6>Stories</h6>
+                            <a href="https://gotn.in/stories/small-business/" class="elementor-item">Micro &amp; Emerging Small Units</a>
+                            <a href="https://gotn.in/stories/high-growth-company/" class="elementor-item">High Growth Company</a>
+                            <a href="https://gotn.in/stories/startup/" class="elementor-item">Established &amp; Large Enterprises</a>
+                            <a href="https://gotn.in/stories/non-profit-organization/" class="elementor-item">Non Profit Organization</a>
+
+                        </div>
+                        <div class="col-xl-3  col-lg-3 col-md-3 col-sm-6 col-6 mb-4">
+                            <h6>Resources</h6>
+                            <a href="https://gotn.in/resources/tamil-nadu-policies/" class="elementor-item">Tamil Nadu Vision</a>
+                            <a href="https://gotn.in/curated-gift-hampers/" class="elementor-item">Curated Gift Hampers</a>
+                            <a href="https://gotn.in/newsletter/" class="elementor-item">Newsletter</a>
+                        </div>
+                        <div class="col-xl-2  col-lg-3 col-md-2 col-sm-6 col-6 mb-4">
+                            <h6><a class="active" href="https://gotn.in/event">Events</a></h6>
+                        </div>
+                        <div class="col-xl-3  col-md-3 col-sm-6 col-6 mb-4">
+                            <h6> About GOTN</h6>
+                            <a href="https://gotn.in/about-us/" class="elementor-item">About GOTN</a>
+                            <a target="_blank" href="https://docs.google.com/forms/d/1pL38YXEwo3BmwIMbNNM_uVWRY1FogPN9nbbNzTw4Olg/viewform?edit_requested=true" class="elementor-item">Subscribe</a>
+                            <a href="https://gotn.in/get-in-touch/" class="elementor-item">Get in Touch</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cp-right">
+                <p class="d-inline-block">© 2026 GoTN.in. All Rights Reserved.</p> &nbsp; &nbsp; <span class="dotd">.</span> &nbsp; &nbsp; <a class="d-inline-block text-white text-decoration-none" href="https://gotn.in/privacy-policy/" rel="noopener noreferrer">Privacy Policy</a>
+            </div>
+        </div>
+    </footer>`;
+}
+const loadRzp=()=>window.Razorpay?0:new Promise(r=>{const s=document.createElement('script');s.src='https://checkout.razorpay.com/v1/checkout.js';s.onload=r;document.head.append(s)});
+async function reg(x){
+  x.preventDefault();const b=x.target.querySelector('button');b.disabled=true;
+  const r=await fetch('/api/register',J(Object.fromEntries(new FormData(x.target)))),o=await r.json();
+  if(!r.ok){toast(o.error);b.disabled=false;return}
+  const done=async p=>{const v=await fetch('/api/verify',J({regId:o.regId,...p}));
+    $('#tix').innerHTML=v.ok?`<h3>Payment received</h3><p>Your registration is under review. We'll email <b>${esc(o.email)}</b> with the decision.</p>`:'<h3>Verification failed</h3><p>Contact the organizers with your payment ID.</p>'};
+  if(o.demo)return done({razorpay_order_id:o.orderId,razorpay_payment_id:'pay_demo_'+o.regId,razorpay_signature:'demo'});
+  await loadRzp();
+  new Razorpay({key:o.keyId,order_id:o.orderId,amount:o.amount,currency:'INR',name:o.eventName,prefill:{name:o.name,email:o.email,contact:o.phone},theme:{color:'#0e5d4b'},handler:done,modal:{ondismiss:()=>b.disabled=false}}).open();
+}
+
+/* ---------------- admin ---------------- */
+const A=async(p,m='GET',b)=>{const r=await fetch(p,{method:m,headers:{'x-admin-password':pw,'Content-Type':'application/json'},body:b?JSON.stringify(b):undefined});const j=await r.json().catch(()=>({}));if(!r.ok)toast(j.error||'Something went wrong');return j};
+async function upl(inp){const f=new FormData();f.append('file',inp.files[0]);const r=await fetch('/api/admin/upload',{method:'POST',headers:{'x-admin-password':pw},body:f}),j=await r.json();if(!r.ok){toast(j.error);return null}return j.url}
+const F=[['name','Event name'],['tagline','Tagline'],['day','Date','date'],['t_start','Start (IST)','time'],['t_end','End (IST)','time'],['venue','Venue name'],['address','Venue address'],['price','Ticket price (₹)','number'],['capacity','Capacity','number']];
+async function admin(){
+  if(!pw){pw=prompt('Admin password')||'';sessionStorage.pw=pw}
+  const r=await fetch('/api/admin/data',{headers:{'x-admin-password':pw}});
+  if(r.status===401){sessionStorage.pw=pw='';toast('Wrong password');location.hash='';return}
+  D=await r.json();draw();
+}
+function sync(){const v=k=>$('#f_'+k).value,e=D.event;F.forEach(([k])=>e[k]=v(k));e.price=Math.round(+v('price')*100);e.description=v('description');e.visibility=v('visibility')}
+async function saveEv(){sync();await A('/api/admin/event','PUT',D.event);toast('Event saved')}
+async function saveSp(){await A('/api/admin/speakers','PUT',D.speakers);toast('Speakers saved')}
+async function banner(i){sync();const u=await upl(i);if(u){D.event.banner=u;draw()}}
+function removeBanner(){sync();D.event.banner='';draw()}
+async function photo(i,inp){sync();const u=await upl(inp);if(u){D.speakers[i].photo=u;draw()}}
+function addSp(){sync();D.speakers.push({name:'',role:'',talk:'',photo:'',linkedin:''});draw()}
+function delSp(i){sync();D.speakers.splice(i,1);draw()}
+async function decide(id,d){if(!confirm(d==='accepted'?'Accept this registration and notify them?':'Decline, refund and send the declined receipt?'))return;const j=await A(`/api/admin/regs/${id}/decision`,'POST',{decision:d});if(j.ok){toast(d==='accepted'?'Accepted, email queued':'Declined, receipt sent');admin()}}
+async function exportRegs(format){
+  if(!D.regs.length)return;
+  const r=await fetch(`/api/admin/regs/export?format=${format}`,{headers:{'x-admin-password':pw}});
+  if(!r.ok){const j=await r.json().catch(()=>({}));toast(j.error||'Export failed');return}
+  const blob=await r.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download=`eventdesk-registrations.${format}`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+  toast(`Downloaded ${format.toUpperCase()} registration data`);
+}
+async function resetRegs(){
+  if(!D.totalRegs){toast('There are no registration records to reset');return}
+  if(!confirm('Reset all registration details? This permanently deletes all registration records and queued registration emails. This cannot be undone.'))return;
+  if(!confirm('Please confirm once more: permanently clear ALL registration details?'))return;
+  const j=await A('/api/admin/regs','DELETE');
+  if(j.ok){toast('All registration details have been cleared');await admin()}
+}
+function draw(){
+  const e=D.event,pend=D.regs.filter(r=>r.status==='pending_review').length;
+  $('#app').innerHTML=`<h1>Organizer dashboard</h1><p><a href="#">← View public page</a></p>
+  <section class="c"><h2>Registrations <small class="mu">(${pend} awaiting review)</small></h2><div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px"><button type="button" onclick="exportRegs('xlsx')" ${D.regs.length?'':'disabled'}>Export XLSX</button><button type="button" onclick="exportRegs('csv')" ${D.regs.length?'':'disabled'}>Export CSV</button><button type="button" class="no" onclick="resetRegs()" ${D.totalRegs?'':'disabled'}>Reset registrations</button></div><div class="scroll">${D.regs.length?`<table><tr><th>Name</th><th>Email</th><th>Company</th><th>Phone</th><th>Payment</th><th>Status</th><th></th></tr>${D.regs.map(r=>`<tr><td>${esc(r.name)}</td><td>${esc(r.email)}</td><td>${esc(r.company)}</td><td>${esc(r.phone)}</td><td>${esc(r.payment_id)}</td><td><span class="st ${r.status}">${r.status.replace('_',' ')}</span></td><td>${r.status==='pending_review'?`<button class="ok" onclick="decide(${r.id},'accepted')">Accept</button> <button class="no" onclick="decide(${r.id},'declined')">Decline</button>`:''}</td></tr>`).join('')}</table>`:'<p class="mu">No paid registrations yet. Register from the public page to test the flow.</p>'}</div></section>
+  <section class="c"><h2>Event page</h2>
+   <label>Banner image</label>${e.banner?`<img class="bthumb" src="${esc(e.banner)}" alt="Current banner"><div style="margin:6px 0 10px"><button type="button" class="no" onclick="removeBanner()">Remove current image</button></div>`:'<p class="mu">No banner image selected.</p>'}<label for="banner_upload">${e.banner?'Replace image':'Upload image'}</label><input id="banner_upload" type="file" accept="image/png,image/jpeg,image/webp,image/gif" onchange="banner(this)">
+   <div class="row2">${F.map(([k,l,t])=>`<div><label for="f_${k}">${l}</label><input id="f_${k}" type="${t||'text'}" value="${esc(k==='price'?e.price/100:e[k])}"></div>`).join('')}</div>
+   <label for="f_description">Description</label><textarea id="f_description">${esc(e.description)}</textarea>
+   <label for="f_visibility">Who sees the attendee list?</label><select id="f_visibility">${[['public','Show full names (accepted only)'],['masked','Show masked names, e.g. P••••• S•••'],['count','Show only the count'],['hidden','Hide completely']].map(([v,l])=>`<option value="${v}" ${e.visibility===v?'selected':''}>${l}</option>`).join('')}</select>
+   <button class="p inl" onclick="saveEv()">Save event</button></section>
+  <section class="c"><h2>Speakers</h2>${D.speakers.map((s,i)=>`<div class="spk">${s.photo?`<img class="thumb" src="${esc(s.photo)}" alt="">`:'<div class="thumb"></div>'}<div>
+   <div class="row2"><input placeholder="Name" value="${esc(s.name)}" oninput="D.speakers[${i}].name=this.value"><input placeholder="Role, company" value="${esc(s.role)}" oninput="D.speakers[${i}].role=this.value"></div>
+   <input style="margin-top:8px" placeholder="Talk title" value="${esc(s.talk)}" oninput="D.speakers[${i}].talk=this.value">
+   <input style="margin-top:8px" placeholder="LinkedIn URL (https://linkedin.com/in/…)" value="${esc(s.linkedin)}" oninput="D.speakers[${i}].linkedin=this.value">
+   <div style="margin-top:8px"><input type="file" accept="image/*" onchange="photo(${i},this)" style="width:auto"> <button class="no" onclick="delSp(${i})">Remove</button></div></div></div>`).join('')}
+   <button onclick="addSp()">Add speaker</button> <button class="p inl" onclick="saveSp()">Save speakers</button></section>`;
+}
+</script></body></html>
