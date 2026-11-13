@@ -24,7 +24,7 @@ img {
     min-height: 500px;
     background-size: cover;
     background-repeat: no-repeat;
-    padding: 220px 300px 50px 70px;
+    padding: 50px 300px 50px 70px;
     border-radius: 8px;
 }
 
@@ -38,6 +38,10 @@ img {
 .ban-bang p {
     color: #fff;
     font-size: 20px;
+}
+
+.ban__img {
+    max-width: 400px;
 }
 
 .gtns {
@@ -132,7 +136,6 @@ img {
 
 .form_box input {
     width: 100%;
-    padding-left: 10px;
     background-color: #fff;
     border: 1px solid #BEBEBE;
     border-radius: 8px;
@@ -140,6 +143,7 @@ img {
     font-size: 16px;
     color: #000000;
     margin-bottom: 10px;
+    padding: 15px;
 }
 
 .form_box button.p {
@@ -285,7 +289,7 @@ img {
 .speaker_box_in {
     border: solid #DDDDDD;
     border-width: 0 1px 1px;
-    min-height: 100px;
+    min-height: 110px;
     padding: 30px 20px;
     border-radius: 0 0 10px 10px;
 }
@@ -327,8 +331,42 @@ img {
     font-weight: 700;
 }
 
+.footer-v1 h6 a.active {
+    color: #FD1A16;
+    text-decoration: none;
+}
+
 .footer-v1 h6:hover {
     color: #FD1A16
+}
+
+.footer-v1 .size-default {
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 22px;
+}
+
+.ft-l {
+    max-width: 300px;
+}
+
+.ft-logo {
+    min-width: 170px;
+    margin-right: 5px;
+}
+
+.cp-right {
+    font-size: 13px;
+    border-block-start: 1px solid rgb(255 255 255 / 13%);
+    padding-top: 40px;
+    margin-top: 20px;
+}
+
+.dotd {
+    font-size: 30px;
+    line-height: 0;
+    position: relative;
+    top: -4px;
 }
 
 @media (max-width: 1399px) {
@@ -341,8 +379,7 @@ img {
     .ban-bang {
         min-height: inherit;
         background-repeat: no-repeat;
-        padding: 120px 20px 20px 20px;
-        background-size: cover;
+        padding: 20px 20px 40px 20px;
     }
     .ban-bang h1 {
         font-size: 40px;
@@ -398,11 +435,20 @@ img {
     .go_back {
         font-size: 16px;
     }
+    .ban-bang p {
+        font-size: 16px;
+    }
+    .ft-logo {
+        min-width: 100px;
+    }
+    .ban-area {
+        padding-top: 10px;
+    }
 }
 
 @media (max-width:575px) {
     .ban-bang {
-        background-size: 134%;
         background-color: #000;
+        background-position: center right -203px;
     }
 }
