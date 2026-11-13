@@ -5,7 +5,7 @@ const merge = (t, c) => t.replace(/\{\{(\w+)\}\}/g, (a, k) => (c[k] ?? a));
 // [email kind, minutes BEFORE event start]. Negative = after the event starts.
 const cadence = [['reminder7d', 7 * 1440], ['reminder1d', 1440], ['reminder1h', 60], ['thanks', -1440]];
 
-const sign = '\n\nThe GOTN Team';
+const sign = '<br/><br/>Best,<br/>The GOTN Team';
 const emails = {
   received: {
     subject: 'Payment received – your seat is under review',
@@ -13,7 +13,7 @@ const emails = {
   },
   accepted: {
     subject: "You're in! {{event}} – {{date}}",
-    body: `<p>Hi {{name}},</p><p>Good news: your registration is accepted.</p><p><strong>When:</strong> {{date}}, {{time}}<br><strong>Where:</strong>{{venue}}<br><strong>Map:</strong> <a href="{{map}}">View Map</a></p><p><strong>Add to calendar (Google):</strong> <a href="{{cal}}">Add to Google Calendar</a><br><strong>Add to calendar (.ics, with reminders):</strong> <a href="{{ics}}">Download .ics</a></p><p><strong>Speakers:</strong></p><div>{{speakers}}</div>${sign}`
+    body: `<p>Hi {{name}},</p><p>Good news: your registration is accepted.</p><p><strong>When:</strong> {{date}}, {{time}}<br><strong>Where:</strong> {{venue}}<br><strong>Map:</strong> <a href="{{map}}">View Map</a></p><p><strong>Add to calendar (Google):</strong> <a href="{{cal}}">Add to Google Calendar</a><br><strong>Add to calendar (.ics, with reminders):</strong> <a href="{{ics}}">Download .ics</a></p><p><strong>Speakers:</strong></p><div>{{speakers}}</div>${sign}`
   },
   reminder7d: {
     subject: 'One week to go – {{event}}',
