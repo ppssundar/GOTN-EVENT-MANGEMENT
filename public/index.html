@@ -2,39 +2,12 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>EventDesk</title>
-<style>
-:root{--bg:#f1f3ef;--c:#fff;--tx:#16201c;--mu:#5d6862;--bd:#dfe3dd;--ac:#0e5d4b;--gold:#f2b705}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
-h1,h2,h3{font-family:Georgia,"Times New Roman",serif;margin:0 0 8px;line-height:1.2}
-a{color:var(--ac)}.mu{color:var(--mu)}.pre{white-space:pre-wrap}
-.w{max-width:1040px;margin:0 auto;padding:16px}
-.ban{min-height:300px;border-radius:14px;color:#fff;display:flex;align-items:flex-end;overflow:hidden;background:#0e5d4b linear-gradient(120deg,#0e5d4b,#16201c) center/cover}
-.ban>div{padding:28px;width:100%;background:linear-gradient(transparent,rgba(0,0,0,.72))}
-.ban h1{font-size:clamp(28px,5vw,46px);margin:0}.ban p{margin:6px 0 0;font-size:17px;max-width:60ch}
-.g{display:grid;grid-template-columns:1fr 330px;gap:16px;margin-top:16px;align-items:start}
-@media(max-width:800px){.g{grid-template-columns:1fr}}
-.c{background:var(--c);border:1px solid var(--bd);border-radius:10px;padding:18px;margin-bottom:16px}
-.fact{display:inline-block;border-left:3px solid var(--gold);padding:0 12px 0 8px;margin:8px 10px 0 0}
-.sp{display:flex;gap:14px;padding:12px 0;border-top:1px solid var(--bd)}.sp:first-of-type{border-top:0}
-.sp img,.av{width:64px;height:64px;border-radius:50%;object-fit:cover;flex:none;background:var(--bd);display:grid;place-items:center;font:700 22px Georgia}
-iframe{width:100%;height:240px;border:0;border-radius:8px;margin:10px 0}
-.pill{display:inline-block;background:var(--bg);border-radius:99px;padding:2px 12px;margin:3px 4px 3px 0;font-size:14px}
-.price{font:700 34px Georgia}
-input,textarea,select{width:100%;padding:9px 10px;border:1px solid var(--bd);border-radius:7px;font:inherit;background:#fff;color:var(--tx)}
-textarea{min-height:110px}.req{color:#c62828;font-weight:700;margin-left:2px}label{display:block;font-size:13px;color:var(--mu);margin:10px 0 3px}
-button{font:inherit;cursor:pointer;border-radius:7px;padding:9px 15px;border:1px solid var(--bd);background:#fff;color:var(--tx)}
-button.p{background:var(--ac);border-color:var(--ac);color:#fff;font-weight:600;width:100%;margin-top:14px}
-button.p.inl{width:auto}button.ok{background:var(--ac);color:#fff;border-color:var(--ac)}button.no{color:#a32020}
-button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offset:1px}
-table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:8px 6px;border-top:1px solid var(--bd);vertical-align:top}
-.scroll{overflow-x:auto}.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.st{padding:2px 9px;border-radius:99px;font-size:12px;background:var(--bd)}.st.accepted{background:#cdeedd}.st.declined{background:#f6d6d6}.st.pending_review{background:#fbe9a6}
-.spk{border-top:1px solid var(--bd);padding:12px 0;display:grid;grid-template-columns:72px 1fr;gap:12px}
-.thumb{width:72px;height:72px;border-radius:50%;object-fit:cover;background:var(--bd)}.bthumb{max-width:100%;max-height:120px;border-radius:8px;display:block;margin:6px 0}
-#t{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--tx);color:#fff;padding:9px 18px;border-radius:8px;display:none}
-@media(prefers-reduced-motion:no-preference){button{transition:background .15s}}
-</style></head><body>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap');
+    </style>
+    <link href="main.css" rel="stylesheet" />
+</head><body class="position-relative figtree">
 <div class="w" id="app"></div><div id="t" role="status"></div>
 <script>
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -50,19 +23,293 @@ async function pub(){
   const d=await (await fetch('/api/event')).json(),e=d.event,loc=encodeURIComponent(e.venue+', '+e.address);document.title=e.name;
   const people=d.attendees.map(a=>`<span class="pill">${esc(a.name)}${a.company?' · '+esc(a.company):''}</span>`).join('');
   const who=e.visibility==='hidden'?'':`<section class="c"><h3>Who's going${d.acceptedCount!=null?' ('+d.acceptedCount+')':''}</h3>${people||`<p class="mu">${d.acceptedCount} confirmed so far. Names are kept private.</p>`}${e.visibility==='masked'?'<p class="mu">Names are masked to protect attendee privacy.</p>':''}</section>`;
-  $('#app').innerHTML=`<div class="ban" style="${e.banner?`background-image:url('${esc(e.banner)}')`:''}"><div><h1>${esc(e.name)}</h1><p>${esc(e.tagline)}</p></div></div>
-  <div class="g"><main>
-   <section class="c"><h2>About this event</h2><p class="pre">${esc(e.description)}</p>
-    <span class="fact"><b>${fmtDate(e.day)}</b></span><span class="fact">${esc(e.t_start)}–${esc(e.t_end)} IST</span><span class="fact">${esc(e.venue)}</span></section>
-   <section class="c"><h2>Speakers</h2>${d.speakers.map(s=>`<div class="sp">${s.photo?`<img src="${esc(s.photo)}" alt="${esc(s.name)}">`:`<div class="av">${esc(s.name[0]||'?')}</div>`}<div><b>${esc(s.name)}</b><br><span class="mu">${esc(s.role)}</span><br><i>${esc(s.talk)}</i>${s.linkedin?`<br><a href="${esc(s.linkedin)}" target="_blank" rel="noopener">LinkedIn profile</a>`:''}</div></div>`).join('')||'<p class="mu">Speakers will be announced soon.</p>'}</section>
-   <section class="c"><h2>Venue</h2><b>${esc(e.venue)}</b><br><span class="mu">${esc(e.address)}</span>
-    <iframe loading="lazy" title="Map" src="https://www.google.com/maps?q=${loc}&output=embed"></iframe>
-    <a href="https://www.google.com/maps/search/?api=1&query=${loc}" target="_blank" rel="noopener">Open in Google Maps</a></section>${who}
-  </main><aside><section class="c" id="tix"><div class="price">${e.price?'₹'+(e.price/100).toLocaleString('en-IN'):'Free'}</div>
-   <p class="mu">Seats are reviewed by the organizers. Declined registrations are refunded automatically.</p>
-   <form onsubmit="reg(event)"><label for="n">Full name<span class="req">*</span></label><input id="n" name="name" autocomplete="name" required><label for="m">Email<span class="req">*</span></label><input id="m" name="email" type="email" autocomplete="email" required><label for="ph">Phone<span class="req">*</span></label><input id="ph" name="phone" type="tel" autocomplete="tel" inputmode="tel" minlength="7" maxlength="20" pattern="[+0-9() .-]{7,20}" required><label for="o">Company<span class="req">*</span></label><input id="o" name="company" autocomplete="organization" required>
+  $('#app').innerHTML=`    <section class="pt-xl-5 pt-4">
+        <div class="container">
+            <div class="row justify-content-center ">
+                <div class="col-lg-10 px-lg-5">
+                    <div class="row justify-content-center align-items-center">
+                        <div class="col-6">
+                            <a href="https://gotn.in/" target="_blank" rel="noopener noreferrer">
+                                <img src="assets/img/gtn-logo.svg" alt="GOTN Logo">
+                            </a>
+                        </div>
+                        <div class="col-6 text-end">
+                            <a href="https://gotn.in/" class="go_back">Back to home</a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+<section class="pt-4">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10 px-lg-5">
+                    <div class="ban ban-bang" style="${e.banner?`background-image:url('${esc(e.banner)}')`:''}">
+                        <div>
+                            <div class="ban__img">
+                                <img src="assets/img/ex-logo.png" alt="GOTN Logo">
+                            </div>
+                            <h1>${esc(e.name)}</h1>
+                            <p>${esc(e.tagline)}</p>
+
+                            <div class="ban-area">
+                                <div class="dte">
+                                    <p> ${new Date(e.day).toLocaleDateString('en-US', {month: 'short',day: 'numeric',year: 'numeric'})} </p>
+                                </div>
+                                <div class="loc">
+                                    <p> ${esc(e.venue)} </p>
+                                </div>
+                                <div class="time">
+                                    <p>${new Date(`${new Date().toISOString().split('T')[0]}T${e.t_start}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).replace(' ', '')} onwards</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+          <section class="pt-4 sec__2">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10 px-lg-5">
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <h2>What is the</h2>
+                            <img src="assets/img/enterpr.png" alt="GOTN Logo">
+                            <h5 class="pt-xl-5 pt-4 mb-0 gtns">GoTN has been telling the stories of Tamil Nadu's entrepreneurs, from home-grown brands to high-growth companies. The Entrepreneurs’ Exchange brings those stories into one room. The aim is simple: a small-business owner should
+                                leave with three things—a new contact who can help, one idea they can use on Monday, and a promise they've made to themselves and will keep.</h5>
+
+                            <h3 class="pt-xl-5 pt-4 mb-4 pb-xl-2">What attendees take away</h3>
+
+                            <div class="">
+                                <ul class="px-3">
+                                    <li class="ll__0 li__1">Real conversations with other CEOs, not just business-card swaps</li>
+                                    <li class="ll__0 li__2">Practical playbooks on sales, AI-era marketing, small-brand building, hiring and exporting</li>
+                                    <li class="ll__0 li__3">A 30-day action plan they write on the day</li>
+                                    <li class="ll__0 li__4">Visibility, through GoTN stories, the directory and the newsletter</li>
+
+                                </ul>
+                            </div>
+
+                            <div class="pt-xl-5 pt-4 mt-xl-5">
+                                <img src="assets/img/swami.png" alt="GOTN Logo">
+                            </div>
+
+                            <h3 class="pt-xl-5 pt-4">We are designing practical strategies for this event including:</h3>
+
+
+                            <div class="match-list">
+                                <div class="match-list-set">
+                                    <h6>Founder matching</h6>
+                                    <p>A pre-event form collects each founder's industry, size, and what they o er and need; GoTN pairs them for speed-meets</p>
+                                </div>
+                                <div class="match-list-set">
+                                    <h6>Topic lunch tables</h6>
+                                    <p>Hosted by volunteer CEOs</p>
+                                </div>
+                                <div class="match-list-set">
+                                    <h6>Mentor corner</h6>
+                                    <p>20-minute slots with experienced CEOs, booked on the day</p>
+
+                                </div>
+                                <div class="match-list-set">
+                                    <h6>Directory sign-up desk</h6>
+                                    <p>Attendees can be listed in the GoTN directory</p>
+                                </div>
+
+                                <div class="match-list-set">
+                                    <h6>Marketplace</h6>
+                                    <p>Stalls for GoTN-featured brands, tying the event to the GoTN shop Contact exchange: a shared digital list, opt-in only, sent after the event</p>
+                                </div>
+
+                            </div>
+
+
+                            <h3 class="pt-xl-5 pt-4 mb-4 pb-xl-3">Who should attend</h3>
+                            <ul class="lists">
+                                <li>CEOs who would like to scale their business and learn from experts</li>
+                                <li>Founders looking to raise capital, exit strategies, and M&A</li>
+                                <li>Leaders who are looking to begin their entrepreneurial journey</li>
+                                <li>Service providers who target CEOs for their business—finance, automotive, insurance, and so on</li>
+                            </ul>
+
+                            <h3 class="pt-xl-5 pt-4 mb-xl-5 mb-4">Our list of speakers being confirmed include:</h3>
+                            <div class="row">
+                            ${d.speakers.map(s=>`<div class="col-xl-4 col-md-6 col-sm-6 mb-4"><div class="speaker_box">${s.photo?`<img src="${esc(s.photo)}" alt="${esc(s.name)}">`:`<div class="av">${esc(s.name[0]||'?')}</div>`}<div class="speaker_box_in"><h6>${esc(s.name)} </h6><p>${esc(s.role)}</p></div></div></div>`).join('')||'<p class="mu">Speakers will be announced soon.</p>'}
+                            </div>
+                            <!--<div class="row">
+                                <div class="col-xl-4 col-md-6 col-sm-6 mb-4">
+                                    <div class="speaker_box">
+                                        <img src="assets/img/spk.png" alt="GOTN Logo">
+                                        <div class="speaker_box_in">
+                                            <h6>Rohit Raheja, </h6>
+                                            <p>CEO, Mentor Match</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-4">
+                                    <div class="speaker_box">
+                                        <img src="assets/img/spk.png" alt="GOTN Logo">
+                                        <div class="speaker_box_in">
+                                            <h6>Rohit Raheja, </h6>
+                                            <p>CEO, Mentor Match</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-4">
+                                    <div class="speaker_box">
+                                        <img src="assets/img/spk.png" alt="GOTN Logo">
+                                        <div class="speaker_box_in">
+                                            <h6>Rohit Raheja, </h6>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-4">
+                                    <div class="speaker_box">
+                                        <img src="assets/img/spk.png" alt="GOTN Logo">
+                                        <div class="speaker_box_in">
+                                            <h6>Rohit Raheja, </h6>
+                                            <p>CEO, Mentor Match</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>-->
+
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="form_box">
+                                <aside><section class="c" id="tix"><div class="price">${e.price?'₹'+(e.price/100).toLocaleString('en-IN'):'Free'}</div>
+   <!--<p class="mu">Seats are reviewed by the organizers. Declined registrations are refunded automatically.</p>-->
+   <form onsubmit="reg(event)"><input id="n" name="name" placeholder="Full name*" aria-label="Full name" autocomplete="name" required><input id="m" name="email" type="email" placeholder="Email*" aria-label="Email" autocomplete="email" required><input id="ph" name="phone" type="tel" placeholder="Phone*" aria-label="Phone" autocomplete="tel" inputmode="tel" minlength="7" maxlength="20" pattern="[+0-9() .-]{7,20}" required><input id="o" name="company" placeholder="Company*" aria-label="Company" autocomplete="organization" required>
    <button class="p">Pay and request a seat</button></form></section>
-   <p class="mu" style="font-size:13px"><a href="#admin">Organizer login</a></p></aside></div>`;
+   <!--<p class="mu" style="font-size:13px"><a href="#admin">Organizer login</a></p></aside>-->
+
+                            </div>
+
+
+                            <div class="partnership_box">
+                                <h5>Partnership options</h5>
+                                <div class="box__1">
+                                    <h6>Title Sponsor <br>(INR 500,000)</h6>
+                                    <p>Event naming, opening remarks, a keynote or session slot, a premium stall, branding on all material, and a feature story on GoTN.in</p>
+                                </div>
+                                <div class="box__1">
+                                    <h6>Session Sponsor <br>(INR 300,000)</h6>
+                                    <p>Branding on one session, a short introduction, a stall, and a newsletter mention</p>
+                                </div>
+                                <div class="box__1">
+                                    <h6>Networking Partner<br>(INR 150,000)</h6>
+                                    <p>Branding on the networking lounge, lunch tables or speed-meets, and a stall</p>
+                                </div>
+                                <div class="box__1">
+                                    <h6>Community Partner (in-kind)</h6>
+                                    <p>Venue, food, printing, technology or media support, with logo placement</p>
+                                </div>
+                                <div class="box__1">
+                                    <h6>Marketplace Stall<br>(INR 50,000)</h6>
+                                    <p>A stall to meet attendees directly</p>
+                                </div>
+
+                                <h5 class="mt-4">Why partner with us</h5>
+                                <div class="box__set_2">
+                                    <p><b>A focused audience:</b> decisionmakers who run small businesses and are actively looking for tools, services and partners in areas such as banking, software, logistics, marketing, hiring, export services</p>
+                                    <p><b>Real engagement, not just a logo:</b> sponsors can host workshops, run stalls and meet founders directly</p>
+                                    <p><b>Ongoing visibility:</b> GoTN's stories, directory, daily newsletter and social channels extend your reach before and after the event</p>
+                                    <p><b>A meaningful cause:</b> supporting small-business growth in Tamil Nadu</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="pb-xl-5 pb-4 mb-xl-5 pt-xl-5 pt-4">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10 px-lg-5">
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <img src="assets/img/foot-map.png" alt="GOTN Logo">
+
+
+                            <div class="d-flex ud_flex">
+                                <div class="ud_flex_img">
+                                    <a href="https://gotn.in/" target="_blank" rel="noopener noreferrer">
+                                        <img src="assets/img/gtn-logo.svg" alt="GOTN Logo">
+                                    </a>
+                                </div>
+                                <div class="">
+                                    <p>Launched in 2020, on the heels of COVID recovery, GoTN.in is a portal for Tamil Nadu entrepreneurs, non-profits, and service providers. Our goal has been to celebrate the entrepreneurial ecosystem of Tamil Nadu, bring
+                                        CEOs to common exchange of ideas, support, and growth, while promoting their products and services on our e-commerce platform. Founded by Karthik Sundaram and Akther Ghori, serial entrepreneurs themselves, GoTN
+                                        is emerging to be the leading voice for the start-up ecosystem of Tamil Nadu. Come, join us nurture the entrepreneurial spirit of our beloved state.</p>
+
+                                    <a href="mailto:akther@gotn.in" class="mail-web">@ Akther@gotn.in</a>
+                                    <a href="https://gotn.in/" class="mail-web px-xl-4"><img src="assets/img/ww.svg" alt="gotn.in"> www.gotn.in</a>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+<footer class="footer-v1 text-white">
+        <div class="container-xxl foot-container">
+            <div class="row">
+                <div class="col-lg-5 mb-4">
+                    <div class="d-flex ft-l">
+                        <div class="ft-logo">
+                            <img src="assets/img/footer-logo.svg" alt="footer-logo">
+                        </div>
+                        <div class="">
+                            <h2 class="size-default">THE PORTAL INTO ENTREPRENEURSHIP IN TAMIL NADU</h2>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="col-lg-7">
+                    <div class="row">
+                        <div class="col-xl-4 col-lg-4 col-md-4 col-sm-6 col-6 mb-4">
+                            <h6>Stories</h6>
+                            <a href="https://gotn.in/stories/small-business/" class="elementor-item">Micro &amp; Emerging Small Units</a>
+                            <a href="https://gotn.in/stories/high-growth-company/" class="elementor-item">High Growth Company</a>
+                            <a href="https://gotn.in/stories/startup/" class="elementor-item">Established &amp; Large Enterprises</a>
+                            <a href="https://gotn.in/stories/non-profit-organization/" class="elementor-item">Non Profit Organization</a>
+
+                        </div>
+                        <div class="col-xl-3  col-lg-3 col-md-3 col-sm-6 col-6 mb-4">
+                            <h6>Resources</h6>
+                            <a href="https://gotn.in/resources/tamil-nadu-policies/" class="elementor-item">Tamil Nadu Vision</a>
+                            <a href="https://gotn.in/curated-gift-hampers/" class="elementor-item">Curated Gift Hampers</a>
+                            <a href="https://gotn.in/newsletter/" class="elementor-item">Newsletter</a>
+                        </div>
+                        <div class="col-xl-2  col-lg-3 col-md-2 col-sm-6 col-6 mb-4">
+                            <h6><a class="active" href="https://gotn.in/event">Events</a></h6>
+                        </div>
+                        <div class="col-xl-3  col-md-3 col-sm-6 col-6 mb-4">
+                            <h6> About GOTN</h6>
+                            <a href="https://gotn.in/about-us/" class="elementor-item">About GOTN</a>
+                            <a target="_blank" href="https://docs.google.com/forms/d/1pL38YXEwo3BmwIMbNNM_uVWRY1FogPN9nbbNzTw4Olg/viewform?edit_requested=true" class="elementor-item">Subscribe</a>
+                            <a href="https://gotn.in/get-in-touch/" class="elementor-item">Get in Touch</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cp-right">
+                <p class="d-inline-block">© 2026 GoTN.in. All Rights Reserved.</p> &nbsp; &nbsp; <span class="dotd">.</span> &nbsp; &nbsp; <a class="d-inline-block text-white text-decoration-none" href="https://gotn.in/privacy-policy/" rel="noopener noreferrer">Privacy Policy</a>
+            </div>
+        </div>
+    </footer>`;
 }
 const loadRzp=()=>window.Razorpay?0:new Promise(r=>{const s=document.createElement('script');s.src='https://checkout.razorpay.com/v1/checkout.js';s.onload=r;document.head.append(s)});
 async function reg(x){
