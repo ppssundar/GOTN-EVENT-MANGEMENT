@@ -449,3 +449,9 @@ img {
         background-position: center right -203px;
     }
 }
+@media screen and (min-width:1024px) {
+    .form_box {
+        position: sticky;
+        top: 0;
+    }
+}
