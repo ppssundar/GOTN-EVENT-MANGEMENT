@@ -28,8 +28,7 @@ Without Razorpay keys, payments run in **demo mode** (no charge). Without SMTP s
 
 ## Customize
 
-- Banner, description, price, capacity, admin notification email addresses (comma-separated), speakers (photo, role, talk, LinkedIn URL): all in the dashboard.
-- Optional discount code `EE27` deducts ₹500 from the server-calculated ticket price. Other non-empty codes are rejected. Payment confirmation is emailed to the registrant and each configured admin address.
+- Banner, description, price, capacity, speakers (photo, role, talk, LinkedIn URL): all in the dashboard.
 - Email copy, cadence timing and decline jokes: `templates.js`.
 - Event times are interpreted as IST (+05:30).
 
