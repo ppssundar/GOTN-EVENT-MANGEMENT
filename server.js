@@ -16,7 +16,18 @@ CREATE TABLE IF NOT EXISTS speakers(id INTEGER PRIMARY KEY,name,role,talk,photo,
 CREATE TABLE IF NOT EXISTS regs(id INTEGER PRIMARY KEY,name,email,company,phone,status,order_id,payment_id,refund_id,created_at DEFAULT CURRENT_TIMESTAMP,amount_paid INTEGER DEFAULT 0,discount_code TEXT DEFAULT '');
 CREATE TABLE IF NOT EXISTS queue(id INTEGER PRIMARY KEY,reg_id INTEGER,kind,to_email,subject,body,send_at,sent_at);`);
 // Migrate existing databases without losing registrations.
-if (!db.prepare('PRAGMA table_info(regs)').all().some(c => c.name === 'phone')) db.exec('ALTER TABLE regs ADD COLUMN phone TEXT NOT NULL DEFAULT \'\'');
+// Older deployed databases may predate fields used by the current registration
+// and discount flow. CREATE TABLE IF NOT EXISTS does not add those columns.
+function ensureColumn(table, column, definition) {
+  const columns = db.prepare(`PRAGMA table_info(${table})`).all();
+  if (!columns.some(c => c.name === column)) {
+    db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+  }
+}
+ensureColumn('regs', 'phone', "TEXT NOT NULL DEFAULT ''");
+ensureColumn('regs', 'amount_paid', 'INTEGER NOT NULL DEFAULT 0');
+ensureColumn('regs', 'discount_code', "TEXT NOT NULL DEFAULT ''");
+ensureColumn('event', 'admin_emails', "TEXT NOT NULL DEFAULT ''");
 if (!db.prepare('SELECT 1 FROM event').get())
   db.prepare('INSERT INTO event VALUES(1,?,?,?,?,?,?,?,?,?,?,?,?,?)').run(
     'Bengaluru Product Summit 2026', 'A one-day conference on building products people love.',
