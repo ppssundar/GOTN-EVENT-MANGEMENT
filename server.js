@@ -11,17 +11,17 @@ const mailer = E.SMTP_HOST ? nodemailer.createTransport({ host: E.SMTP_HOST, por
 fs.mkdirSync('data/uploads', { recursive: true });
 const db = new Database('data/app.db');
 db.exec(`
-CREATE TABLE IF NOT EXISTS event(id INTEGER PRIMARY KEY CHECK(id=1),name,tagline,description,day,t_start,t_end,venue,address,price INTEGER,banner,visibility,capacity INTEGER,admin_emails TEXT DEFAULT '');
+CREATE TABLE IF NOT EXISTS event(id INTEGER PRIMARY KEY CHECK(id=1),name,tagline,description,day,t_start,t_end,venue,address,price INTEGER,banner,visibility,capacity INTEGER);
 CREATE TABLE IF NOT EXISTS speakers(id INTEGER PRIMARY KEY,name,role,talk,photo,linkedin);
-CREATE TABLE IF NOT EXISTS regs(id INTEGER PRIMARY KEY,name,email,company,phone,status,order_id,payment_id,refund_id,created_at DEFAULT CURRENT_TIMESTAMP,amount_paid INTEGER DEFAULT 0,discount_code TEXT DEFAULT '');
+CREATE TABLE IF NOT EXISTS regs(id INTEGER PRIMARY KEY,name,email,company,phone,status,order_id,payment_id,refund_id,created_at DEFAULT CURRENT_TIMESTAMP);
 CREATE TABLE IF NOT EXISTS queue(id INTEGER PRIMARY KEY,reg_id INTEGER,kind,to_email,subject,body,send_at,sent_at);`);
 // Migrate existing databases without losing registrations.
 if (!db.prepare('PRAGMA table_info(regs)').all().some(c => c.name === 'phone')) db.exec('ALTER TABLE regs ADD COLUMN phone TEXT NOT NULL DEFAULT \'\'');
 if (!db.prepare('SELECT 1 FROM event').get())
-  db.prepare('INSERT INTO event VALUES(1,?,?,?,?,?,?,?,?,?,?,?,?,?)').run(
+  db.prepare('INSERT INTO event VALUES(1,?,?,?,?,?,?,?,?,?,?,?,?)').run(
     'Bengaluru Product Summit 2026', 'A one-day conference on building products people love.',
     'Talks, workshops and long coffee breaks for product people.\n\nExpect practical sessions, no fluff.',
-    '2026-12-05', '10:00', '17:30', 'Taj Yeshwantpur', '2275, Tumkur Rd, Yeshwantpur, Bengaluru 560022', 350000, '', 'masked', 300, '');
+    '2026-12-05', '10:00', '17:30', 'Taj Yeshwantpur', '2275, Tumkur Rd, Yeshwantpur, Bengaluru 560022', 350000, '', 'masked', 300);
 // Update the previous default ticket price without overwriting custom admin pricing.
 db.prepare('UPDATE event SET price=350000 WHERE id=1 AND price=149900').run();
 
@@ -43,21 +43,14 @@ function ctx(r, extra = {}) {
     date: startAt(e).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Kolkata' }),
     time: `${e.t_start}–${e.t_end} IST`, venue: place(e), page: BASE, ics: BASE + '/api/ics', cal: calUrl(e),
     map: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(place(e)),
-    price: '₹' + ((r.amount_paid || e.price) / 100), originalPrice: '₹' + e.price / 100, discountCode: r.discount_code || '', receipt: String(r.id).padStart(5, '0'),
+    price: '₹' + e.price / 100, receipt: String(r.id).padStart(5, '0'),
     speakers: speakers().map(s => `• ${s.name} – ${s.talk}`).join('\n'), ...extra
   };
 }
-function enqueueTo(r, kind, toEmail, when = new Date(), extra) {
+function enqueue(r, kind, when = new Date(), extra) {
   const t = T.emails[kind], c = ctx(r, extra);
   db.prepare('INSERT INTO queue(reg_id,kind,to_email,subject,body,send_at) VALUES(?,?,?,?,?,?)')
-    .run(r.id, kind, toEmail, T.merge(t.subject, c), T.merge(t.body, c), when.toISOString());
-}
-function enqueue(r, kind, when = new Date(), extra) {
-  enqueueTo(r, kind, r.email, when, extra);
-  if (kind === 'received') {
-    const admins = (ev().admin_emails || '').split(',').map(x => x.trim()).filter(x => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(x));
-    for (const email of new Set(admins)) if (email.toLowerCase() !== r.email.toLowerCase()) enqueueTo(r, kind, email, when, extra);
-  }
+    .run(r.id, kind, r.email, T.merge(t.subject, c), T.merge(t.body, c), when.toISOString());
 }
 async function flush() { // sends everything that is due; prints to console when SMTP isn't configured
   const due = db.prepare('SELECT * FROM queue WHERE sent_at IS NULL AND send_at<=?').all(new Date().toISOString());
@@ -92,16 +85,12 @@ app.post('/api/register', async (q, s) => {
     const n = (q.body.name || '').trim().slice(0, 80), m = (q.body.email || '').trim().toLowerCase().slice(0, 120), c = (q.body.company || '').trim().slice(0, 80), phone = (q.body.phone || '').trim().slice(0, 20);
     if (!n || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(m) || !c || !/^[+0-9() .-]{7,20}$/.test(phone) || phone.replace(/\D/g, '').length < 7 || phone.replace(/\D/g, '').length > 15) return s.status(400).json({ error: 'Enter your full name, a valid email, company and valid phone number.' });
     const e = ev();
-    const code = String(q.body.discountCode || '').trim().toUpperCase();
-    if (code && code !== 'EE27') return s.status(400).json({ error: 'Invalid discount code.' });
-    const discount = code === 'EE27' ? 50000 : 0;
-    const amount = Math.max(0, e.price - discount);
     if (db.prepare("SELECT COUNT(*) n FROM regs WHERE status IN('accepted','pending_review')").get().n >= e.capacity) return s.status(409).json({ error: 'This event is sold out.' });
     if (db.prepare("SELECT 1 FROM regs WHERE email=? AND status IN('accepted','pending_review')").get(m)) return s.status(409).json({ error: 'This email is already registered.' });
-    const id = db.prepare("INSERT INTO regs(name,email,company,phone,status,amount_paid,discount_code) VALUES(?,?,?,?, 'unpaid',?,?)").run(n, m, c, phone, amount, code).lastInsertRowid;
-    const order = LIVE ? await rp.orders.create({ amount, currency: 'INR', receipt: 'reg_' + id }) : { id: 'order_demo_' + id };
+    const id = db.prepare("INSERT INTO regs(name,email,company,phone,status) VALUES(?,?,?,?, 'unpaid')").run(n, m, c, phone).lastInsertRowid;
+    const order = LIVE ? await rp.orders.create({ amount: e.price, currency: 'INR', receipt: 'reg_' + id }) : { id: 'order_demo_' + id };
     db.prepare('UPDATE regs SET order_id=? WHERE id=?').run(order.id, id);
-    s.json({ regId: id, orderId: order.id, amount, originalAmount: e.price, discount, discountCode: code, keyId: E.RAZORPAY_KEY_ID || null, demo: !LIVE, name: n, email: m, phone, eventName: e.name });
+    s.json({ regId: id, orderId: order.id, amount: e.price, keyId: E.RAZORPAY_KEY_ID || null, demo: !LIVE, name: n, email: m, phone, eventName: e.name });
   } catch (err) { console.error(err); s.status(500).json({ error: 'Could not start payment. Try again.' }); }
 });
 
@@ -183,9 +172,9 @@ app.post('/api/admin/upload', upload.single('file'), (q, s) =>
 
 app.put('/api/admin/event', (q, s) => {
   const b = q.body;
-  db.prepare('UPDATE event SET name=?,tagline=?,description=?,day=?,t_start=?,t_end=?,venue=?,address=?,price=?,banner=?,visibility=?,capacity=?,admin_emails=? WHERE id=1')
+  db.prepare('UPDATE event SET name=?,tagline=?,description=?,day=?,t_start=?,t_end=?,venue=?,address=?,price=?,banner=?,visibility=?,capacity=? WHERE id=1')
     .run(b.name, b.tagline, b.description, b.day, b.t_start, b.t_end, b.venue, b.address, Math.round(+b.price) || 0, safe(b.banner),
-      ['public', 'masked', 'count', 'hidden'].includes(b.visibility) ? b.visibility : 'masked', +b.capacity || 0, String(b.admin_emails || '').split(',').map(x=>x.trim()).filter(x=>/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(x)).join(', '));
+      ['public', 'masked', 'count', 'hidden'].includes(b.visibility) ? b.visibility : 'masked', +b.capacity || 0);
   s.json({ ok: true });
 });
 
