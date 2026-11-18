@@ -14,7 +14,12 @@ db.exec(`
 CREATE TABLE IF NOT EXISTS event(id INTEGER PRIMARY KEY CHECK(id=1),name,tagline,description,day,t_start,t_end,venue,address,price INTEGER,banner,visibility,capacity INTEGER,admin_emails TEXT DEFAULT '');
 CREATE TABLE IF NOT EXISTS speakers(id INTEGER PRIMARY KEY,name,role,talk,photo,linkedin);
 CREATE TABLE IF NOT EXISTS regs(id INTEGER PRIMARY KEY,name,email,company,phone,status,order_id,payment_id,refund_id,created_at DEFAULT CURRENT_TIMESTAMP,amount_paid INTEGER DEFAULT 0,discount_code TEXT DEFAULT '');
-CREATE TABLE IF NOT EXISTS queue(id INTEGER PRIMARY KEY,reg_id INTEGER,kind,to_email,subject,body,send_at,sent_at);`);
+CREATE TABLE IF NOT EXISTS queue(id INTEGER PRIMARY KEY,reg_id INTEGER,kind,to_email,subject,body,send_at,sent_at);
+DELETE FROM queue WHERE id NOT IN (
+  SELECT MIN(id) FROM queue GROUP BY reg_id, kind, LOWER(to_email)
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_queue_registration_kind_recipient
+  ON queue(reg_id, kind, LOWER(to_email));`);
 // Migrate existing databases without losing registrations.
 // Older deployed databases may predate fields used by the current registration
 // and discount flow. CREATE TABLE IF NOT EXISTS does not add those columns.
@@ -57,7 +62,9 @@ const mask = n => n.split(/\s+/).map(w => w[0] + '•'.repeat(Math.max(w.length 
 function ctx(r, extra = {}) {
   const e = ev();
   return {
-    name: r.name.split(' ')[0], event: e.name, paymentId: r.payment_id || '',
+    name: r.name.split(' ')[0], fullName: r.name, email: r.email,
+    phone: r.phone ? '+91' + String(r.phone).replace(/^91/, '') : '',
+    company: r.company || '', registrationId: String(r.id), event: e.name, paymentId: r.payment_id || '',
     date: startAt(e).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Kolkata' }),
     time: `${e.t_start}–${e.t_end} IST`, venue: place(e), page: BASE, ics: BASE + '/api/ics', cal: calUrl(e),
     map: 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(place(e)),
@@ -67,14 +74,22 @@ function ctx(r, extra = {}) {
 }
 function enqueueTo(r, kind, toEmail, when = new Date(), extra) {
   const t = T.emails[kind], c = ctx(r, extra);
-  db.prepare('INSERT INTO queue(reg_id,kind,to_email,subject,body,send_at) VALUES(?,?,?,?,?,?)')
+  db.prepare('INSERT OR IGNORE INTO queue(reg_id,kind,to_email,subject,body,send_at) VALUES(?,?,?,?,?,?)')
     .run(r.id, kind, toEmail, T.merge(t.subject, c), T.merge(t.body, c), when.toISOString());
 }
 function enqueue(r, kind, when = new Date(), extra) {
   enqueueTo(r, kind, r.email, when, extra);
-  if (kind === 'received') {
-    const admins = (ev().admin_emails || '').split(',').map(x => x.trim()).filter(x => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(x));
-    for (const email of new Set(admins)) if (email.toLowerCase() !== r.email.toLowerCase()) enqueueTo(r, kind, email, when, extra);
+}
+
+// Admin registration alerts are queued only after payment verification succeeds.
+// Invalid addresses are ignored; duplicate addresses are collapsed case-insensitively.
+function enqueueAdminRegistration(r, when = new Date()) {
+  const admins = (ev().admin_emails || '').split(',')
+    .map(x => x.trim())
+    .filter(x => /^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(x));
+  const uniqueAdmins = new Map(admins.map(email => [email.toLowerCase(), email]));
+  for (const email of uniqueAdmins.values()) {
+    enqueueTo(r, 'adminRegistration', email, when);
   }
 }
 async function flush() { // sends everything that is due; prints to console when SMTP isn't configured
@@ -150,8 +165,20 @@ app.post('/api/verify', (q, s) => {
     if (g !== x) return s.status(400).json({ error: 'Bad signature' });
   }
   const pid = p || 'pay_demo_' + regId;
-  db.prepare("UPDATE regs SET status='pending_review',payment_id=? WHERE id=?").run(pid, regId);
-  enqueue({ ...r, payment_id: pid }, 'received'); flush();
+  const confirmed = { ...r, payment_id: pid };
+  // One atomic state transition + queue insert: repeated callbacks cannot create
+  // another admin notification, and a failed mail send remains queued for retry.
+  const confirmPayment = db.transaction(() => {
+    const result = db.prepare(
+      "UPDATE regs SET status='pending_review',payment_id=? WHERE id=? AND status='unpaid'"
+    ).run(pid, regId);
+    if (result.changes !== 1) return false;
+    enqueue(confirmed, 'received');
+    enqueueAdminRegistration(confirmed);
+    return true;
+  });
+  if (!confirmPayment()) return s.status(200).json({ ok: true, duplicate: true });
+  flush();
   s.json({ ok: true });
 });
 

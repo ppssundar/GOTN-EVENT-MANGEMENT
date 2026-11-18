@@ -7,6 +7,20 @@ const cadence = [['reminder7d', 7 * 1440], ['reminder1d', 1440], ['reminder1h', 
 
 const sign = '<br/><br/>Best,<br/>The GOTN Team';
 const emails = {
+  // Sent to every valid address in Event Settings > Admin emails,
+  // only after Razorpay payment verification succeeds.
+  adminRegistration: {
+    subject: 'New paid registration – {{registrationId}} – {{fullName}}',
+    body: `<h2>New successful event registration</h2>
+      <table style="border-collapse:collapse;font-family:Arial,sans-serif;">
+        <tr><td style="padding:6px 12px 6px 0;"><strong>Registration ID</strong></td><td>{{registrationId}}</td></tr>
+        <tr><td style="padding:6px 12px 6px 0;"><strong>Full name</strong></td><td>{{fullName}}</td></tr>
+        <tr><td style="padding:6px 12px 6px 0;"><strong>Email</strong></td><td>{{email}}</td></tr>
+        <tr><td style="padding:6px 12px 6px 0;"><strong>Phone</strong></td><td>{{phone}}</td></tr>
+        <tr><td style="padding:6px 12px 6px 0;"><strong>Company</strong></td><td>{{company}}</td></tr>
+        <tr><td style="padding:6px 12px 6px 0;"><strong>Amount paid</strong></td><td>{{price}}</td></tr>
+      </table>`
+  },
   received: {
     subject: 'Payment received – your seat is under review',
     body: `<p>Hi {{name}},</p><p>We've received your payment of {{price}} for {{event}} (payment {{paymentId}}).</p><p>Seats are curated, so our team will review your registration and email you a decision shortly. If we can't offer you a seat, your payment is refunded automatically.</p>${sign}`
