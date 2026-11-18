@@ -101,7 +101,7 @@ app.get('/api/event', (q, s) => {
 app.post('/api/register', async (q, s) => {
   try {
     const n = (q.body.name || '').trim().slice(0, 80), m = (q.body.email || '').trim().toLowerCase().slice(0, 120), c = (q.body.company || '').trim().slice(0, 80), phone = (q.body.phone || '').trim().slice(0, 20);
-    if (!n || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(m) || !c || !/^[+0-9() .-]{7,20}$/.test(phone) || phone.replace(/\D/g, '').length < 7 || phone.replace(/\D/g, '').length > 15) return s.status(400).json({ error: 'Enter your full name, a valid email, company and valid phone number.' });
+    if (!n || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(m) || !c || !/^91[6-9][0-9]{9}$/.test(phone)) return s.status(400).json({ error: 'Enter your full name, a valid email, company and valid phone number.' });
     const e = ev();
     const code = String(q.body.discountCode || '').trim().toUpperCase();
     if (code && code !== 'EE27') return s.status(400).json({ error: 'Invalid discount code.' });
