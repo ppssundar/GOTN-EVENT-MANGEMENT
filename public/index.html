@@ -16,7 +16,7 @@ const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>
 const toast=m=>{const t=$('#t');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',2200)};
 const fmtDate=d=>new Date(d+'T00:00').toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 const J=(b)=>({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});
-let pw=sessionStorage.pw||'',D;
+let pw=sessionStorage.pw||'',D,ticketBasePrice=0;
 // Load the organizer dashboard stylesheet only on #admin.
 // The public event page continues to use main.css without these overrides.
 const ADMIN_STYLE = `<style id="admin-only-style">
@@ -71,7 +71,7 @@ addEventListener('hashchange',route);route();
 
 /* ---------------- public page ---------------- */
 async function pub(){
-  const d=await (await fetch('/api/event')).json(),e=d.event,loc=encodeURIComponent(e.venue+', '+e.address);
+  const d=await (await fetch('/api/event')).json(),e=d.event,loc=encodeURIComponent(e.venue+', '+e.address);ticketBasePrice=e.price;
   const people=d.attendees.map(a=>`<span class="pill">${esc(a.name)}${a.company?' · '+esc(a.company):''}</span>`).join('');
   const who=e.visibility==='hidden'?'':`<section class="c"><h3>Who's going${d.acceptedCount!=null?' ('+d.acceptedCount+')':''}</h3>${people||`<p class="mu">${d.acceptedCount} confirmed so far. Names are kept private.</p>`}${e.visibility==='masked'?'<p class="mu">Names are masked to protect attendee privacy.</p>':''}</section>`;
   $('#app').innerHTML=`    <section class="pt-xl-5 pt-4">
@@ -233,9 +233,9 @@ async function pub(){
                         </div>
                         <div class="col-lg-4">
                             <div class="form_box">
-                                <aside><section class="c" id="tix"><p><b>Early Bird Price Ending Nov 30, 2026</b></p><div class="price">${e.price?'₹'+(e.price/100).toLocaleString('en-IN'):'Free'}</div>
+                                <aside><section class="c" id="tix"><p><b>Early Bird Price Ending Nov 30, 2026</b></p><div class="price" id="ticket-price">${e.price?'₹'+(e.price/100).toLocaleString('en-IN'):'Free'}</div>
    <!--<p class="mu">Seats are reviewed by the organizers. Declined registrations are refunded automatically.</p>-->
-   <form onsubmit="reg(event)"><input id="n" name="name" placeholder="Full name*" aria-label="Full name" autocomplete="name" required><input id="m" name="email" type="email" placeholder="Email*" aria-label="Email" autocomplete="email" required><input id="ph" name="phone" type="tel" placeholder="Phone*" aria-label="Phone" autocomplete="tel" inputmode="tel" minlength="7" maxlength="20" pattern="[+0-9() .-]{7,20}" required><input id="o" name="company" placeholder="Company*" aria-label="Company" autocomplete="organization" required>
+   <form onsubmit="reg(event)"><input id="n" name="name" placeholder="Full name*" aria-label="Full name" autocomplete="name" required><input id="m" name="email" type="email" placeholder="Email*" aria-label="Email" autocomplete="email" required><input id="ph" name="phone" type="tel" placeholder="Phone*" aria-label="Phone" autocomplete="tel" inputmode="tel" minlength="7" maxlength="20" pattern="[+0-9() .-]{7,20}" required><input id="o" name="company" placeholder="Company*" aria-label="Company" autocomplete="organization" required><input id="discount-code" name="discountCode" placeholder="Discount code (optional)" aria-label="Discount code" autocomplete="off"><small id="discount-message" class="mu" aria-live="polite"></small>
    <button class="p">Pay and request a seat</button></form></section>
    <!--<p class="mu" style="font-size:13px"><a href="#admin">Organizer login</a></p></aside>-->
 
@@ -362,15 +362,80 @@ async function pub(){
         </div>
     </footer>`;
 }
-const loadRzp=()=>window.Razorpay?0:new Promise(r=>{const s=document.createElement('script');s.src='https://checkout.razorpay.com/v1/checkout.js';s.onload=r;document.head.append(s)});
+/*const loadRzp=()=>window.Razorpay?0:new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://checkout.razorpay.com/v1/checkout.js';s.onload=resolve;s.onerror=()=>reject(new Error('Could not load Razorpay checkout.'));document.head.append(s)});
+const baseTicketPrice=ticketBasePrice;
+function previewDiscount(){const input=document.getElementById('discount-code'),msg=document.getElementById('discount-message'),price=document.getElementById('ticket-price');if(!input||!price)return;const code=input.value.trim().toUpperCase();if(!code){price.textContent='₹'+(baseTicketPrice/100).toLocaleString('en-IN');msg.textContent='';return}if(code==='EE27'){price.innerHTML='<s style="font-size:20px;color:#777">₹'+(baseTicketPrice/100).toLocaleString('en-IN')+'</s> <strong>₹'+((Math.max(0,baseTicketPrice-50000))/100).toLocaleString('en-IN')+'</strong>';msg.textContent='₹500 discount applied';msg.style.color='green'}else{price.textContent='₹'+(baseTicketPrice/100).toLocaleString('en-IN');msg.textContent='Invalid discount code';msg.style.color='crimson'}}
+document.addEventListener('input',e=>{if(e.target&&e.target.id==='discount-code')previewDiscount()});*/
+
+const loadRzp=()=>window.Razorpay?0:new Promise((resolve,reject)=>{
+  const s=document.createElement('script');
+  s.src='https://checkout.razorpay.com/v1/checkout.js';
+  s.onload=resolve;
+  s.onerror=()=>reject(new Error('Could not load Razorpay checkout.'));
+  document.head.append(s);
+});
+
+// Always use the latest event ticket price.
+function formatINR(paise){
+  return '₹'+(paise/100).toLocaleString('en-IN');
+}
+
+function previewDiscount(){
+  const input=document.getElementById('discount-code');
+  const msg=document.getElementById('discount-message');
+  const price=document.getElementById('ticket-price');
+
+  if(!input||!msg||!price)return;
+
+  const code=input.value.trim().toUpperCase();
+  const original=ticketBasePrice;
+
+  // Default ticket price
+  if(!code){
+    price.textContent=formatINR(original);
+    msg.textContent='';
+    msg.style.color='';
+    return;
+  }
+
+  // Valid discount code
+  if(code==='EE27'){
+    const discount=50000; // ₹500 in paise
+    const finalPrice=Math.max(0,original-discount);
+
+    price.innerHTML=
+      '<s style="font-size:20px;color:#777;margin-right:8px">'+
+      formatINR(original)+
+      '</s> <strong style="color:#0e5d4b">'+
+      formatINR(finalPrice)+
+      '</strong>';
+
+    msg.textContent='₹500 discount applied';
+    msg.style.color='green';
+
+  }else{
+    // Invalid discount code
+    price.textContent=formatINR(original);
+    msg.textContent='Invalid discount code';
+    msg.style.color='crimson';
+  }
+}
+
+// Update price whenever discount code changes.
+document.addEventListener('input',e=>{
+  if(e.target && e.target.id==='discount-code'){
+    previewDiscount();
+  }
+});
+
 async function reg(x){
   x.preventDefault();const b=x.target.querySelector('button');b.disabled=true;
-  const r=await fetch('/api/register',J(Object.fromEntries(new FormData(x.target)))),o=await r.json();
+  let r,o;try{r=await fetch('/api/register',J(Object.fromEntries(new FormData(x.target))));o=await r.json()}catch(err){toast('Could not connect. Please try again.');b.disabled=false;return}
   if(!r.ok){toast(o.error);b.disabled=false;return}
   const done=async p=>{const v=await fetch('/api/verify',J({regId:o.regId,...p}));
     $('#tix').innerHTML=v.ok?`<h3>Payment received</h3><p>Your registration is under review. We'll email <b>${esc(o.email)}</b> with the decision.</p>`:'<h3>Verification failed</h3><p>Contact the organizers with your payment ID.</p>'};
   if(o.demo)return done({razorpay_order_id:o.orderId,razorpay_payment_id:'pay_demo_'+o.regId,razorpay_signature:'demo'});
-  await loadRzp();
+  try{await loadRzp()}catch(err){toast(err.message);b.disabled=false;return}
   new Razorpay({key:o.keyId,order_id:o.orderId,amount:o.amount,currency:'INR',name:o.eventName,prefill:{name:o.name,email:o.email,contact:o.phone},theme:{color:'#0e5d4b'},handler:done,modal:{ondismiss:()=>b.disabled=false}}).open();
 }
 
@@ -384,7 +449,7 @@ async function admin(){
   if(r.status===401){sessionStorage.pw=pw='';toast('Wrong password');location.hash='';return}
   D=await r.json();draw();
 }
-function sync(){const v=k=>$('#f_'+k).value,e=D.event;F.forEach(([k])=>e[k]=v(k));e.price=Math.round(+v('price')*100);e.description=v('description');e.visibility=v('visibility')}
+function sync(){const v=k=>$('#f_'+k).value,e=D.event;F.forEach(([k])=>e[k]=v(k));e.price=Math.round(+v('price')*100);e.description=v('description');e.visibility=v('visibility');e.admin_emails=$('#f_admin_emails').value}
 async function saveEv(){sync();await A('/api/admin/event','PUT',D.event);toast('Event saved')}
 async function saveSp(){await A('/api/admin/speakers','PUT',D.speakers);toast('Speakers saved')}
 async function banner(i){sync();const u=await upl(i);if(u){D.event.banner=u;draw()}}
@@ -415,7 +480,7 @@ function draw(){
   <section class="c"><h2>Event page</h2>
    <label>Banner image</label>${e.banner?`<img class="bthumb" src="${esc(e.banner)}" alt="Current banner"><div style="margin:6px 0 10px"><button type="button" class="no" onclick="removeBanner()">Remove current image</button></div>`:'<p class="mu">No banner image selected.</p>'}<label for="banner_upload">${e.banner?'Replace image':'Upload image'}</label><input id="banner_upload" type="file" accept="image/png,image/jpeg,image/webp,image/gif" onchange="banner(this)">
    <div class="row2">${F.map(([k,l,t])=>`<div><label for="f_${k}">${l}</label><input id="f_${k}" type="${t||'text'}" value="${esc(k==='price'?e.price/100:e[k])}"></div>`).join('')}</div>
-   <label for="f_description">Description</label><textarea id="f_description">${esc(e.description)}</textarea>
+   <label for="f_admin_emails">Admin email addresses (comma-separated)</label><input id="f_admin_emails" type="text" placeholder="admin@example.com, events@example.com" value="${esc(e.admin_emails||'')}"><small class="mu">Payment notification emails will be sent to each valid address.</small><label for="f_description">Description</label><textarea id="f_description">${esc(e.description)}</textarea>
    <label for="f_visibility">Who sees the attendee list?</label><select id="f_visibility">${[['public','Show full names (accepted only)'],['masked','Show masked names, e.g. P••••• S•••'],['count','Show only the count'],['hidden','Hide completely']].map(([v,l])=>`<option value="${v}" ${e.visibility===v?'selected':''}>${l}</option>`).join('')}</select>
    <button class="p inl" onclick="saveEv()">Save event</button></section>
   <section class="c"><h2>Speakers</h2>${D.speakers.map((s,i)=>`<div class="spk">${s.photo?`<img class="thumb" src="${esc(s.photo)}" alt="">`:'<div class="thumb"></div>'}<div>
