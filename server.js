@@ -84,9 +84,11 @@ function enqueue(r, kind, when = new Date(), extra) {
 // Admin registration alerts are queued only after payment verification succeeds.
 // Invalid addresses are ignored; duplicate addresses are collapsed case-insensitively.
 function enqueueAdminRegistration(r, when = new Date()) {
+  // Read the comma-separated recipients saved in Event Settings.
+  // Validate each address and remove duplicates without regard to case.
   const admins = (ev().admin_emails || '').split(',')
     .map(x => x.trim())
-    .filter(x => /^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(x));
+    .filter(x => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(x));
   const uniqueAdmins = new Map(admins.map(email => [email.toLowerCase(), email]));
   for (const email of uniqueAdmins.values()) {
     enqueueTo(r, 'adminRegistration', email, when);
@@ -156,7 +158,7 @@ app.post('/api/register', async (q, s) => {
   } catch (err) { console.error(err); s.status(500).json({ error: 'Could not start payment. Try again.' }); }
 });
 
-app.post('/api/verify', (q, s) => {
+app.post('/api/verify', async (q, s) => {
   const { regId, razorpay_order_id: o, razorpay_payment_id: p, razorpay_signature: g } = q.body;
   const r = db.prepare("SELECT * FROM regs WHERE id=? AND status='unpaid'").get(regId);
   if (!r || r.order_id !== o) return s.status(400).json({ error: 'Unknown order' });
@@ -178,7 +180,7 @@ app.post('/api/verify', (q, s) => {
     return true;
   });
   if (!confirmPayment()) return s.status(200).json({ ok: true, duplicate: true });
-  flush();
+  await flush();
   s.json({ ok: true });
 });
 
